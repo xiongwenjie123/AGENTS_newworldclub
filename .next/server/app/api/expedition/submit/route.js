@@ -1,0 +1,12 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/expedition/submit/route.js")
+R.c("server/chunks/[root-of-the-server]__967eb35c._.js")
+R.c("server/chunks/_b90a2351._.js")
+R.c("server/chunks/[root-of-the-server]__4b9c784e._.js")
+R.c("server/chunks/0b98e_next_9c621e96._.js")
+R.c("server/chunks/[root-of-the-server]__70d98542._.js")
+R.c("server/chunks/aefa7_drizzle-orm_9e9f21f6._.js")
+R.c("server/chunks/[root-of-the-server]__8c4593d8._.js")
+R.c("server/chunks/a8d7e_zod_v4_classic_external_c49c25de.js")
+R.c("server/chunks/_next-internal_server_app_api_expedition_submit_route_actions_dfcedbb2.js")
+R.m(92222)
+module.exports=R.m(92222).exports

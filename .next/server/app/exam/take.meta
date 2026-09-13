@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/exam/layout,_N_T_/exam/take/layout,_N_T_/exam/take/page,_N_T_/exam/take"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/exam/take/__PAGE__",
+    "/exam/take",
+    "/exam",
+    "/_index",
+    "/_head"
+  ]
+}

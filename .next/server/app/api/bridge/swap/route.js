@@ -1,0 +1,12 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/bridge/swap/route.js")
+R.c("server/chunks/[root-of-the-server]__956659f9._.js")
+R.c("server/chunks/_b90a2351._.js")
+R.c("server/chunks/[root-of-the-server]__4b9c784e._.js")
+R.c("server/chunks/[root-of-the-server]__8c4593d8._.js")
+R.c("server/chunks/0b98e_next_9c621e96._.js")
+R.c("server/chunks/a8d7e_zod_v4_classic_external_c49c25de.js")
+R.c("server/chunks/aefa7_drizzle-orm_9e9f21f6._.js")
+R.c("server/chunks/[root-of-the-server]__70d98542._.js")
+R.c("server/chunks/_next-internal_server_app_api_bridge_swap_route_actions_07cddc8a.js")
+R.m(58674)
+module.exports=R.m(58674).exports

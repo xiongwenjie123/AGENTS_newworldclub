@@ -1,0 +1,10 @@
+var R=require("../../../../../../chunks/[turbopack]_runtime.js")("server/app/api/expedition/passport/snapshot/[snapshotId]/route.js")
+R.c("server/chunks/_b90a2351._.js")
+R.c("server/chunks/0b98e_next_9c621e96._.js")
+R.c("server/chunks/[root-of-the-server]__3c7dc0d0._.js")
+R.c("server/chunks/[root-of-the-server]__70d98542._.js")
+R.c("server/chunks/aefa7_drizzle-orm_9e9f21f6._.js")
+R.c("server/chunks/[root-of-the-server]__8c4593d8._.js")
+R.c("server/chunks/ce889_server_app_api_expedition_passport_snapshot_[snapshotId]_route_actions_5ef11301.js")
+R.m(94539)
+module.exports=R.m(94539).exports

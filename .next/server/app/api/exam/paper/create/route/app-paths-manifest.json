@@ -1,0 +1,3 @@
+{
+  "/api/exam/paper/create/route": "app/api/exam/paper/create/route.js"
+}

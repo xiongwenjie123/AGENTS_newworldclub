@@ -1,0 +1,10 @@
+var R=require("../../../../../../chunks/[turbopack]_runtime.js")("server/app/api/exam/assign/[id]/revoke/route.js")
+R.c("server/chunks/[root-of-the-server]__9be0de97._.js")
+R.c("server/chunks/0b98e_next_9c621e96._.js")
+R.c("server/chunks/_b90a2351._.js")
+R.c("server/chunks/aefa7_drizzle-orm_9e9f21f6._.js")
+R.c("server/chunks/[root-of-the-server]__70d98542._.js")
+R.c("server/chunks/[root-of-the-server]__8c4593d8._.js")
+R.c("server/chunks/_next-internal_server_app_api_exam_assign_[id]_revoke_route_actions_44eee04f.js")
+R.m(80319)
+module.exports=R.m(80319).exports

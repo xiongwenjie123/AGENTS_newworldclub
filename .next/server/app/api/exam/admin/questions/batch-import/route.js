@@ -1,0 +1,11 @@
+var R=require("../../../../../../chunks/[turbopack]_runtime.js")("server/app/api/exam/admin/questions/batch-import/route.js")
+R.c("server/chunks/_b90a2351._.js")
+R.c("server/chunks/[root-of-the-server]__8c4593d8._.js")
+R.c("server/chunks/[root-of-the-server]__1ed25075._.js")
+R.c("server/chunks/0b98e_next_9c621e96._.js")
+R.c("server/chunks/a505b_xlsx_xlsx_mjs_95922ec0._.js")
+R.c("server/chunks/[root-of-the-server]__70d98542._.js")
+R.c("server/chunks/aefa7_drizzle-orm_9e9f21f6._.js")
+R.c("server/chunks/ce889_server_app_api_exam_admin_questions_batch-import_route_actions_77233109.js")
+R.m(11297)
+module.exports=R.m(11297).exports

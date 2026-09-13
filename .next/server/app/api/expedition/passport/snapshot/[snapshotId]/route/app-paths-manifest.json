@@ -1,0 +1,3 @@
+{
+  "/api/expedition/passport/snapshot/[snapshotId]/route": "app/api/expedition/passport/snapshot/[snapshotId]/route.js"
+}
