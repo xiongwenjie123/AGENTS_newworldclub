@@ -1,0 +1,3022 @@
+新大陆俱乐部 · 人才选聘系统 V2.0 PRD文档
+
+ 
+
+文档用途：交付 AtomCode 直接进行增量迭代开发；V1.0原有所有功能完整保留，本次全部为新增/增量模块，不改动旧业务逻辑
+
+项目理念：一句话帮你招对人
+
+核心新增：登舰考试（智考）模块，包含官方试卷库管理、出题基础算法、企业需求输入、个性化考卷生成、考卷分发、考生作答、21型职业+八维能力测评分析报告
+
+开发模式：复用Github开源组件，标注仓库地址、安装命令、配置要点，可直接复制执行
+
+ 
+
+文档目录
+
+ 
+
+1. 修订记录
+
+2. 产品概述 & V2.0迭代目标
+
+3. 业务上下文（V1.0存量功能清单，全部保留）
+
+4. V2.0新增业务流程（登舰考试·智考全链路）
+
+5. 用户角色扩展
+
+6. 功能需求详情（分模块，含后台管理端、企业HR端、应聘者个人端）
+
+7. 核心算法设计：出题基础算法 + 测评打分&分类算法（21型职业、八维能力）
+
+8. 数据结构设计（新增数据表，不修改旧表）
+
+9. 开源组件选型（Github仓库、安装命令、配置说明，AtomCode直接使用）
+
+10. 权限设计
+
+11. 页面原型说明
+
+12. 非功能需求
+
+13. 上线部署 & 测试用例
+
+14. 风险与降级方案
+
+ 
+
+ 
+
+ 
+
+1. 修订记录
+
+ 
+
+版本 日期 修订人 变更内容 
+
+V1.0 原有 形万象团队 初代新大陆俱乐部，21席三舱、Mission七步闭环、人才匹配基础框架 
+
+V2.0 2026-09-12 形万象团队 新增【登舰考试-智考】完整模块；官方题库导入、AI出题算法、企业定制考卷、分发作答、测评报告 
+
+ 
+
+2. 产品概述 & V2.0迭代目标
+
+ 
+
+2.1 产品简介
+
+ 
+
+新大陆俱乐部人才选聘系统，面向企业HR/老板，基于资深HR与企业主调研问卷沉淀的面试测评经验，登舰考试（智考） 是V2.0核心新增能力。企业输入招聘需求，系统从官方试卷库自动组卷生成专属考卷，分发候选人作答；提交后后台算法输出八维能力得分 + 21型职业适配判定，给出人才录用参考建议，实现「一句话帮你招对人」。
+
+ 
+
+2.2 V2.0迭代目标（增量，存量不动）
+
+ 
+
+1. 后台运营侧：官方试卷库手动导入入口，支持批量/单条录入调研得到的测评题目，维护题目标签、能力维度、职业分类。
+
+2. 出题基础算法：基于企业岗位需求，从官方题库筛选、重组生成个性化登舰考卷，附带评测打分标准。
+
+3. 企业HR端：HR录入行业、岗位、用人偏好等招聘需求，一键生成考卷、一键分发至候选人（绑定候选人唯一用户ID）。
+
+4. 应聘者个人端：登舰考试入口，查看分配给自己考卷、在线作答、提交答卷。
+
+5. 测评分析引擎：答卷提交后自动计算八维能力分数，匹配21型职业分类，输出可视化测评报告与录用建议。
+
+6. 所有V1.0原有业务（21席三舱编组、Mission七步闭环、人才画像、团队匹配等）全部保留，不做删除与破坏性修改。
+
+ 
+
+2.3 核心业务一句话链路
+
+ 
+
+运营后台导入调研题目至官方题库 → HR录入招聘需求 → 出题算法自动筛选组卷生成专属考卷 → HR一键分发到候选人唯一UID → 候选人登录进入登舰入口答题提交 → 测评算法解析答卷 → 输出八维+21型职业测评报告给HR。
+
+ 
+
+3. V1.0存量功能清单（全部保留，本次不改动）
+
+ 
+
+开发提示：下面模块代码、数据库表、接口全部保留，新增功能独立新增表、独立路由、独立服务。
+
+ 
+
+1. 用户体系：企业管理员账号、个人用户注册、唯一UID生成、身份鉴权
+
+2. 21席三舱人才基础画像
+
+3. Mission七步闭环任务管理
+
+4. 人才基础匹配、团队编组
+
+5. 项目Demo数据看板、基础统计面板
+
+6. 原有权限、登录、日志模块
+
+ 
+
+4. V2.0新增业务流程：登舰考试（智考）完整流程
+
+ 
+
+流程1：运营后台维护官方试卷库
+
+ 
+
+1. 运营（项目管理员）登录后台，进入【官方题库管理】页面
+
+2. 单条新增题目 / 批量导入Excel题库（调研问卷产出的测评题）
+
+3. 录入题目元数据：题干、选项、作答类型（单选/多选/开放简答题）、所属八维能力标签、适配21型职业标签、权重分值、评判标准
+
+4. 保存入库，支持编辑、上下线、删除、搜索筛选题库
+
+ 
+
+流程2：企业HR录入招聘需求，生成登舰考卷
+
+ 
+
+1. HR登录企业后台，进入【登舰智考】模块
+
+2. 填写招聘需求表单：行业、目标岗位、岗位描述、用人要求、岗位优先级、希望考察的八维能力、期望的21职业类型、题目数量偏好
+
+3. 点击【生成专属考卷】，调用出题基础算法
+
+4. 算法读取官方题库，匹配需求标签，自动抽取题目，生成整套考卷+配套评测标准
+
+5. HR预览考卷，可手动增删调整题目；确认后保存考卷（考卷归属该企业账号）
+
+ 
+
+流程3：HR分发考卷给应聘者
+
+ 
+
+1. HR输入应聘者唯一用户UID，绑定考卷
+
+2. 点击【分发登舰考卷】，系统将考卷关联至该个人用户账号
+
+3. 应聘者收到通知（站内消息）
+
+ 
+
+流程4：应聘者作答登舰考卷
+
+ 
+
+1. 应聘者（个人用户）登录前端，进入【登舰考试】入口
+
+2. 展示分配给自己的考卷，支持限时作答配置
+
+3. 逐题作答，自动保存草稿；完成后提交答卷
+
+4. 答卷数据入库，触发后台测评分析任务
+
+ 
+
+流程5：后台测评算法分析，生成测评报告
+
+ 
+
+1. 接收答卷数据，执行测评引擎
+
+2. 计算八大能力分项得分；基于答题特征匹配21型职业适配类别
+
+3. 生成可视化测评报告：能力雷达图、21职业匹配结论、综合录用建议、风险提示（区分实干/嘴炮候选人）
+
+4. HR在后台查看完整报告，导出PDF
+
+ 
+
+5. 用户角色扩展（原有角色保留，新增权限子集）
+
+ 
+
+1. 平台运营管理员（新增权限：题库管理）：导入、维护官方试卷库，管理题目标签，查看全平台考卷统计
+
+2. 企业HR/企业管理员（新增模块：登舰智考）：录入招聘需求、生成考卷、分发考卷、查看候选人测评报告
+
+3. 个人应聘者用户（新增入口：登舰考试）：接收考卷、在线答题、提交答卷（应聘者看不到测评报告，报告仅HR可见）
+
+ 
+
+6. 功能需求详情（增量新增模块）
+
+ 
+
+模块A：平台运营后台 - 官方试卷库管理【新增】
+
+ 
+
+路由独立： /admin/exam-question-lib 
+
+ 
+
+A1 题目单条新增
+
+ 
+
+字段录入项：
+
+ 
+
+- 题目ID（自增）
+
+- 题干文本
+
+- 题型：单选 / 多选 / 开放简答
+
+- 选项（单选多选使用）
+
+- 参考答案/评判规则（简答题填写人工+算法判定标准）
+
+- 标签组：八维能力标签（探索力/想象力/理解力/拆解力/执行力/协作力/决策力/守护力）
+
+- 标签组：21型职业标签（探索7类、建造7类、治理7类，可多选）
+
+- 权重分值（0~10分）
+
+- 题目状态：上线 / 下线（下线题目组卷算法不会选取）
+
+- 创建时间、修改时间
+
+ 
+
+A2 批量导入题库（核心！导入调研问卷产出的试卷）
+
+ 
+
+- 支持上传Excel模板，模板固定字段与上面录入字段一一对应
+
+- 导入校验：格式校验、标签合法性校验，错误行提示，支持跳过错误行批量入库
+
+- 导出题库：导出全部官方题库为Excel备份
+
+ 
+
+A3 题库检索与管理
+
+ 
+
+- 筛选：按八维标签、21职业标签、题型、上下线状态搜索题目
+
+- 编辑、删除、批量上下线
+
+- 题库统计：题目总量，各能力维度题目数量统计
+
+ 
+
+模块B：企业HR后台 - 登舰考卷生成&管理【新增】
+
+ 
+
+路由独立： /company/ship-exam 
+
+ 
+
+B1 招聘需求录入表单（出题算法输入参数）
+
+ 
+
+输入字段：
+
+ 
+
+1. 所属行业（下拉+自定义输入）
+
+2. 目标招聘岗位名称
+
+3. 岗位描述（长文本）
+
+4. 岗位需要重点考察的八维能力（多选）
+
+5. 期望匹配的21型职业类别（多选）
+
+6. 考卷总题目数量（输入数字，范围5~50题）
+
+7. 考卷名称、考试限时（分钟，可选）
+
+8. 附加用人备注（自由文本，作为算法辅助参考）
+
+ 
+
+B2 一键生成专属考卷（调用出题基础算法）
+
+ 
+
+- 点击生成，后端调用出题算法，从官方上线题库筛选匹配标签的题目，自动组卷
+
+- HR预览整套考卷：题干、选项、分值、评测标准
+
+- 人工二次编辑：HR可手动增加、删除、替换系统选出的题目
+
+- 保存考卷：考卷归属当前企业账号，独立考卷ID
+
+ 
+
+B3 考卷分发管理
+
+ 
+
+1. 分发操作：输入应聘者唯一用户UID，绑定考卷UID与用户UID
+
+2. 考卷状态：未分发 / 已分发 / 考生已作答 / 已完成测评
+
+3. 分发记录列表：候选人UID、分发时间、答卷提交时间、报告生成状态
+
+4. 支持撤回未作答考卷
+
+ 
+
+B4 测评报告查看 & 导出
+
+ 
+
+1. 答卷提交完成后，报告自动生成
+
+2. 报告内容：
+
+- 八维能力雷达图（8项能力得分）
+
+- 21型职业匹配TOP3推荐
+
+- 综合人才判定：是否偏实干 / 偏话术型（基于调研特征）
+
+- 录用建议（一句话结论，对应产品理念：一句话帮你招对人）
+
+3. 支持PDF导出报告
+
+ 
+
+模块C：个人应聘者前端 - 登舰考试作答入口【新增】
+
+ 
+
+路由独立： /user/ship-exam 
+
+ 
+
+1. 首页展示【登舰考试】入口，仅在HR分发考卷后可见
+
+2. 考卷列表：分配给自己的考卷，显示截止时间
+
+3. 答题页面：分页展示题目，自动本地草稿保存（防刷新丢失答案）
+
+4. 提交校验：必填题提示；提交后不可修改答案
+
+5. 提交成功提示；无报告查看权限（报告仅HR查看）
+
+ 
+
+模块D：后端核心服务【新增微服务/接口】
+
+ 
+
+1. 题库服务：题目CRUD、标签检索、批量导入解析
+
+2. 出题基础算法服务：接收招聘需求参数，检索题库，按权重筛选、组合生成考卷
+
+3. 答卷存储服务：存储候选人作答记录
+
+4. 测评分析引擎：接收答卷，计算八维得分、匹配21型职业、生成报告数据
+
+5. 消息通知服务：考卷分发站内信推送
+
+ 
+
+#7 核心算法详细设计（可直接编码）
+
+##7.1 出题基础算法（组卷算法）
+
+ 
+
+输入：HR招聘需求参数
+
+输出：一套专属考卷（题目列表+评测标准）
+
+ 
+
+plaintext  
+
+算法逻辑伪代码
+
+1. 从官方题库过滤：只取出状态=上线的题目池
+
+2. 过滤规则：优先匹配【选中的八维能力标签】，其次匹配【期望21职业标签】
+
+3. 权重打分：每道题匹配标签越多，题目优先级权重越高
+
+4. 按权重排序，抽取N道题目（N=HR填写的题目数量）
+
+5. 多样性约束：保证题型分布均衡，不会全部都是简答题/选择题
+
+6. 输出题目集合，生成考卷元信息，附带每道题对应的评测打分标准
+
+7. 可选：如果匹配题目不足，降低标签严格度，扩大题目池兜底
+
+ 
+
+ 
+
+参数配置文件： exam-algorithm-config.json ，可调整标签权重系数，无需改代码。
+
+ 
+
+##7.2 测评分析算法（答卷解析，八维+21职业判定）
+
+输入：候选人所有作答记录
+
+输出：八维分数，21职业TOP3匹配，综合人才结论
+
+ 
+
+1. 八维能力计算：每道题目绑定对应能力维度，按作答结果累加维度分值，归一化0~100分
+
+2. 21型职业匹配：基于各维度能力向量，与预设21类职业能力特征向量做余弦相似度计算，输出相似度TOP3职业
+
+3. 实干/嘴炮特征识别：匹配调研问卷收集的作答特征规则库，标记风险提示
+
+4. 规则库：来自HR/老板调研问卷，可后台持续更新规则，不需要重新部署代码
+
+ 
+
+开发说明：向量相似度计算可直接使用开源向量工具，见下方开源组件清单
+
+ 
+
+#8 新增数据库表设计（不修改原有V1.0数据表，全部新建）
+
+ 
+
+数据库：MySQL，增量建表脚本，可直接执行
+
+##表1： exam_official_question  官方题库表
+
+ 
+
+sql  
+
+CREATE TABLE `exam_official_question` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+
+  `title` text NOT NULL COMMENT '题干',
+
+  `question_type` varchar(20) NOT NULL COMMENT 'single/multiple/essay 单选多选简答',
+
+  `options` text COMMENT 'json存储选项',
+
+  `judge_rule` text COMMENT '评判标准、参考答案',
+
+  `eight_dim_tags` varchar(255) COMMENT '八维标签逗号分隔',
+
+  `career21_tags` varchar(255) COMMENT '21职业标签逗号分隔',
+
+  `weight_score` int DEFAULT 5 COMMENT '题目权重',
+
+  `status` tinyint DEFAULT 1 COMMENT '1上线0下线',
+
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ 
+
+ 
+
+##表2： exam_paper  HR生成的企业考卷表
+
+ 
+
+sql  
+
+CREATE TABLE `exam_paper` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+
+  `company_id` bigint NOT NULL COMMENT '企业账号ID',
+
+  `paper_name` varchar(100) NOT NULL,
+
+  `demand_json` text NOT NULL COMMENT 'HR招聘需求参数json',
+
+  `question_ids` text NOT NULL COMMENT '选中题目id数组json',
+
+  `time_limit` int COMMENT '考试限时分钟',
+
+  `status` tinyint DEFAULT 1,
+
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ 
+
+ 
+
+##表3： exam_paper_assign  考卷分发绑定（考卷 ↔ 候选人UID）
+
+ 
+
+sql  
+
+CREATE TABLE `exam_paper_assign` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+
+  `paper_id` bigint NOT NULL,
+
+  `user_uid` varchar(64) NOT NULL COMMENT '应聘者唯一UID',
+
+  `assign_time` datetime DEFAULT CURRENT_TIMESTAMP,
+
+  `submit_time` datetime NULL,
+
+  `report_id` bigint NULL COMMENT '测评报告ID',
+
+  `status` tinyint DEFAULT 0 COMMENT '0未作答 1已提交 2报告完成'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ 
+
+ 
+
+##表4： exam_answer_record  应聘者答卷记录表
+
+ 
+
+sql  
+
+CREATE TABLE `exam_answer_record` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+
+  `assign_id` bigint NOT NULL,
+
+  `question_id` bigint NOT NULL,
+
+  `user_answer` text COMMENT '用户作答内容',
+
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ 
+
+ 
+
+##表5： exam_report  测评报告结果表
+
+ 
+
+sql  
+
+CREATE TABLE `exam_report` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+
+  `assign_id` bigint NOT NULL,
+
+  `eight_dim_score` text NOT NULL COMMENT '八维得分json',
+
+  `career21_result` text NOT NULL COMMENT 'TOP3职业匹配json',
+
+  `risk_tip` text COMMENT '嘴炮/实干风险提示',
+
+  `final_suggest` varchar(500) COMMENT '一句话录用建议',
+
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ 
+
+ 
+
+#9 开源组件选型（Github仓库、安装命令，AtomCode直接部署配置）
+
+ 
+
+原则：尽量复用成熟开源包，减少自研工作量；版本固定，直接复制命令安装
+
+ 
+
+9.1 Excel批量导入导出（题库批量上传/导出）
+
+ 
+
+仓库：https://github.com/SheetJS/sheetjs
+
+ 
+
+前端解析Excel，支持xlsx导入导出题库
+
+安装命令
+
+ 
+
+bash  
+
+npm install sheetjs
+
+ 
+
+ 
+
+用途：运营后台批量导入调研问卷题库，导出题库备份
+
+ 
+
+##9.2 向量相似度计算（21职业匹配余弦相似度，测评算法核心）
+
+仓库：https://github.com/nmslib/hnswlib
+
+Python后端使用，轻量向量检索，计算候选人能力向量与21职业标准向量相似度
+
+ 
+
+bash  
+
+pip install hnswlib
+
+ 
+
+ 
+
+备选轻量方案（JS后端）：https://github.com/turbomaze/vecmath
+
+ 
+
+##9.3 前端雷达图（测评报告八维能力雷达图展示）
+
+仓库：https://github.com/apache/echarts
+
+ 
+
+bash  
+
+npm install echarts
+
+ 
+
+ 
+
+用途：HR报告页面绘制八维能力雷达图可视化
+
+ 
+
+##9.4 PDF导出（测评报告导出PDF）
+
+仓库：https://github.com/GoogleChrome/puppeteer
+
+ 
+
+bash  
+
+npm install puppeteer
+
+ 
+
+ 
+
+用途：前端/后端渲染测评报告页面，导出PDF文件
+
+ 
+
+##9.5 表单、草稿本地存储（考生答题页面自动保存草稿）
+
+仓库：https://github.com/localForage/localForage
+
+ 
+
+bash  
+
+npm install localforage
+
+ 
+
+ 
+
+用途：应聘者答题页面，本地缓存作答草稿，刷新不丢答案
+
+ 
+
+##9.6 任务队列（答卷提交后异步生成测评报告，防止接口超时）
+
+仓库：https://github.com/OptimalBits/bull
+
+Redis队列，异步后台任务，答卷提交后后台离线跑测评算法生成报告
+
+ 
+
+bash  
+
+npm install bull redis
+
+ 
+
+ 
+
+依赖：需要本地/容器部署redis
+
+ 
+
+##9.7 标签检索辅助（题库多标签筛选，可选）
+
+如果题目量大，可使用：https://github.com/meilisearch/meilisearch
+
+轻量搜索引擎，快速按标签检索题库
+
+ 
+
+bash  
+
+# docker一键启动meilisearch
+
+docker run -d --name meilisearch -p 7700:7700 getmeili/meilisearch:latest
+
+ 
+
+ 
+
+#10 权限设计（RBAC增量扩展，原有权限体系不动）
+
+ 
+
+1. 平台运营管理员：【题库全部读写权限】，无企业考卷查看权限
+
+2. 企业HR账号：仅能操作本企业创建的考卷、查看本企业候选人报告；不可访问官方题库的编辑入口（只能调用算法来选题，不能直接修改官方题库）
+
+3. 个人应聘者账号：仅能查看分配给自己考卷、作答提交；无法查看任何测评报告、题库
+
+ 
+
+#11 页面原型说明（页面清单，交给前端开发）
+
+ 
+
+运营后台页面
+
+ 
+
+1. 官方题库列表页：搜索筛选、新增题目、批量导入Excel、导出题库、编辑删除
+
+ 
+
+企业HR后台页面
+
+ 
+
+1. 登舰智考首页：考卷列表，新建考卷入口
+
+2. 招聘需求录入表单页
+
+3. 考卷预览 & 人工编辑页面
+
+4. 考卷分发页面（输入候选人UID绑定）
+
+5. 答卷&测评报告列表页
+
+6. 测评报告详情页（雷达图、21职业匹配、一句话录用建议、PDF导出）
+
+ 
+
+个人用户前端页面
+
+ 
+
+1. 登舰考试首页：待完成考卷卡片列表
+
+2. 在线答题页面（分页题目，自动草稿保存，提交按钮）
+
+ 
+
+#12 非功能需求
+
+ 
+
+1. 并发：同时支持至少50用户在线答题
+
+2. 安全：答卷数据、测评报告权限隔离，企业只能看自己候选人数据
+
+3. 兼容性：PC端优先，适配移动端答题
+
+4. 性能：组卷算法响应 <3s；测评报告异步生成，最长等待10s
+
+5. 数据备份：题库、答卷数据定时备份
+
+ 
+
+#13 测试用例（核心功能冒烟测试，开发自测）
+
+ 
+
+1. 运营上传Excel调研题库，成功入库，标签正常识别
+
+2. HR录入招聘需求，点击生成考卷，系统从官方题库自动抽取题目
+
+3. HR预览考卷，手动删除/增加题目，保存成功
+
+4. HR输入候选人UID分发考卷；候选人登录看到登舰考卷
+
+5. 候选人完成作答提交；后台触发测评任务
+
+6. HR查看报告：八维雷达图、TOP3 21职业、一句话录用建议正常展示，PDF导出成功
+
+7. 权限校验：应聘者无法查看测评报告；A企业看不到B企业考卷
+
+ 
+
+#14 风险与降级方案
+
+ 
+
+1. 风险：标签匹配题目不足。降级策略：算法自动放宽标签权重，扩大题库范围兜底，依然生成考卷，页面提示HR。
+
+2. 风险：简答开放题自动评判效果有限。降级：算法输出参考判定，报告标注【简答题建议HR人工复核】。
+
+3. 风险：异步报告任务队列故障。降级：提供手动触发重新生成报告按钮，HR可以重试分析。
+
+4. 风险：题库导入Excel格式异常。降级：逐行校验，错误行单独列出，不污染全部导入数据。
+
+ 
+
+ 
+
+ 
+
+开发交付提示给AtomCode
+
+ 
+
+【重要】本迭代增量开发，禁止修改V1原有数据库表、原有接口、原有页面逻辑。所有新增模块独立路由、独立数据表、独立服务。所有开源包直接按文档命令安装配置。出题算法与测评引擎代码独立文件，方便后续迭代调整权重与规则。
+
+ 
+
+下一步
+
+ 
+
+1. 单独把数据库建表SQL提取成单独 .sql 文件文本，直接导入数据库
+
+2. 单独抽离前端页面接口API文档（OpenAPI格式）
+
+3. 提取算法伪代码转成可直接运行的python/js代码片段
+
+ 
+
+交付包（顺序：1.SQL建表文件 → 2.OpenAPI接口文档 →3.算法可执行代码片段）
+
+ 
+
+重要前置说明：全部为增量新增，不改动V1.0任何旧表/旧接口；所有新表独立，可直接导入MySQL
+
+项目：新大陆俱乐部人才选聘系统 V2.0｜模块：登舰考试（智考）
+
+ 
+
+ 
+
+ 
+
+【第一项】单独 .sql 建表脚本（可直接复制保存为  exam_v2_create_table.sql ，导入MySQL）
+
+ 
+
+sql  
+
+-- ==============================================
+
+-- 新大陆俱乐部 V2.0 登舰考试模块 新增数据表
+
+-- 注意：V1.0原有表不做任何修改，仅执行下面新增建表语句
+
+-- 数据库编码 utf8mb4，InnoDB引擎
+
+-- ==============================================
+
+
+
+-- 表1：exam_official_question 官方题库表（运营后台维护调研录入题目）
+
+CREATE TABLE `exam_official_question` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT COMMENT '题目主键ID',
+
+  `title` text NOT NULL COMMENT '题干文本',
+
+  `question_type` varchar(20) NOT NULL COMMENT 'single单选 / multiple多选 / essay开放简答',
+
+  `options` text COMMENT 'JSON存储选项数组，单选多选使用；简答此字段留空',
+
+  `judge_rule` text COMMENT '评判标准、参考答案、打分细则（来自HR/老板调研问卷）',
+
+  `eight_dim_tags` varchar(255) DEFAULT '' COMMENT '八维能力标签，逗号分隔：探索力,想象力,理解力,拆解力,执行力,协作力,决策力,守护力',
+
+  `career21_tags` varchar(255) DEFAULT '' COMMENT '21型职业标签，逗号分隔，支持多标签',
+
+  `weight_score` int DEFAULT 5 COMMENT '题目权重分值 0~10',
+
+  `status` tinyint DEFAULT 1 COMMENT '1=上线(可被组卷算法选取) 0=下线',
+
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='官方登舰考试题库';
+
+
+
+-- 表2：exam_paper HR生成的企业专属考卷表
+
+CREATE TABLE `exam_paper` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT COMMENT '考卷主键ID',
+
+  `company_id` bigint NOT NULL COMMENT '企业账号ID，关联企业主表',
+
+  `paper_name` varchar(100) NOT NULL COMMENT '考卷名称',
+
+  `demand_json` text NOT NULL COMMENT 'HR录入招聘需求完整JSON参数，作为出题算法输入',
+
+  `question_ids` text NOT NULL COMMENT '选中题目ID数组JSON',
+
+  `time_limit` int NULL COMMENT '考试限时，单位分钟；NULL代表不限时',
+
+  `status` tinyint DEFAULT 1 COMMENT '0草稿 1已发布可用',
+
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='企业生成的登舰考卷';
+
+
+
+-- 表3：exam_paper_assign 考卷分发绑定表：考卷 ↔ 应聘者唯一UID
+
+CREATE TABLE `exam_paper_assign` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT COMMENT '分发记录主键',
+
+  `paper_id` bigint NOT NULL COMMENT '关联考卷ID',
+
+  `user_uid` varchar(64) NOT NULL COMMENT '应聘者全局唯一UID，用户体系主键',
+
+  `assign_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '分发时间',
+
+  `submit_time` datetime NULL COMMENT '答卷提交时间，未提交为NULL',
+
+  `report_id` bigint NULL COMMENT '测评报告ID，报告生成后回填',
+
+  `status` tinyint DEFAULT 0 COMMENT '0=已分发未作答 1=已提交待分析 2=报告生成完成'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='考卷分发绑定';
+
+
+
+-- 表4：exam_answer_record 应聘者单题作答记录表
+
+CREATE TABLE `exam_answer_record` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT COMMENT '作答记录主键',
+
+  `assign_id` bigint NOT NULL COMMENT '关联分发记录ID',
+
+  `question_id` bigint NOT NULL COMMENT '关联官方题目ID',
+
+  `user_answer` text COMMENT '用户填写答案；单选多选存选项编号，简答存文本',
+
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '作答保存时间'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='考生答题记录';
+
+
+
+-- 表5：exam_report 测评结果报告表
+
+CREATE TABLE `exam_report` (
+
+  `id` bigint PRIMARY KEY AUTO_INCREMENT COMMENT '报告主键ID',
+
+  `assign_id` bigint NOT NULL COMMENT '关联分发记录ID',
+
+  `eight_dim_score` text NOT NULL COMMENT '八维能力得分JSON，0~100分',
+
+  `career21_result` text NOT NULL COMMENT 'TOP3 21职业匹配结果JSON（名称、相似度分数）',
+
+  `risk_tip` text COMMENT '风险提示：嘴炮型/实干型标记，调研规则输出',
+
+  `final_suggest` varchar(500) COMMENT '一句话录用建议，产品核心理念输出',
+
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '报告生成时间'
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='登舰考试测评报告';
+
+
+
+-- 索引优化（必须执行，提升题库筛选、查询性能）
+
+CREATE INDEX idx_q_eight_dim ON exam_official_question(eight_dim_tags(191));
+
+CREATE INDEX idx_q_career21 ON exam_official_question(career21_tags(191));
+
+CREATE INDEX idx_q_status ON exam_official_question(status);
+
+CREATE INDEX idx_paper_company ON exam_paper(company_id);
+
+CREATE INDEX idx_assign_uid ON exam_paper_assign(user_uid);
+
+CREATE INDEX idx_assign_paper ON exam_paper_assign(paper_id);
+
+CREATE INDEX idx_answer_assign ON exam_answer_record(assign_id);
+
+CREATE INDEX idx_report_assign ON exam_report(assign_id);
+
+ 
+
+ 
+
+使用方法：复制全部代码保存为  exam_v2_create_table.sql ，Navicat/DBeaver直接执行。原有V1表不受任何影响。
+
+ 
+
+ 
+
+ 
+
+【第二项】OpenAPI 3.0 接口文档（YAML格式，保存为  exam-api-v2.yaml ，可导入Apifox/Swagger）
+
+ 
+
+yaml  
+
+openapi: 3.0.3
+
+info:
+
+  title: 新大陆俱乐部V2.0 - 登舰考试（智考）接口
+
+  description: 增量新增接口，V1原有接口完全保留，不修改。权限使用原有全局token鉴权
+
+  version: 2.0.0
+
+servers:
+
+  - url: /api/v2
+
+paths:
+
+  # ========== 平台运营后台接口（题库管理，仅平台管理员角色） ==========
+
+  /admin/question/list:
+
+    get:
+
+      summary: 题库列表查询、筛选
+
+      parameters:
+
+        - name: eight_dim_tags
+
+          in: query
+
+          schema: {type: string}
+
+        - name: career21_tags
+
+          in: query
+
+          schema: {type: string}
+
+        - name: status
+
+          in: query
+
+          schema: {type: integer}
+
+        - name: page
+
+          in: query
+
+          schema: {type: integer, default:1}
+
+        - name: size
+
+          in: query
+
+          schema: {type: integer, default:20}
+
+      responses:
+
+        200:
+
+          description: 题库分页列表
+
+  /admin/question/add:
+
+    post:
+
+      summary: 单条新增题目
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              type: object
+
+              properties:
+
+                title: {type:string}
+
+                question_type: {type:string}
+
+                options: {type:string}
+
+                judge_rule: {type:string}
+
+                eight_dim_tags: {type:string}
+
+                career21_tags: {type:string}
+
+                weight_score: {type:integer}
+
+                status: {type:integer}
+
+      responses:
+
+        200:
+
+          description: 创建成功
+
+  /admin/question/batch-import:
+
+    post:
+
+      summary: Excel批量导入题库
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          multipart/form-data:
+
+            schema:
+
+              type: object
+
+              properties:
+
+                file: {type: string, format: binary}
+
+      responses:
+
+        200:
+
+          description: 返回成功行数、错误行详情
+
+  /admin/question/export:
+
+    get:
+
+      summary: 导出全部题库Excel
+
+      responses:
+
+        200:
+
+          description: 文件流下载
+
+  /admin/question/{id}:
+
+    put:
+
+      summary: 编辑题目
+
+      parameters: [{name:id,in:path,required:true,schema:{type:integer}}]
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              type: object
+
+      responses:
+
+        200:
+
+          description: 更新成功
+
+    delete:
+
+      summary: 删除题目
+
+      parameters: [{name:id,in:path,required:true,schema:{type:integer}}]
+
+      responses:
+
+        200:
+
+          description: 删除成功
+
+
+
+  # ========== 企业HR接口：考卷生成、分发、报告查看 ==========
+
+  /company/exam/create-paper:
+
+    post:
+
+      summary: HR录入招聘需求，调用出题算法生成考卷
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              type: object
+
+              properties:
+
+                paper_name: {type:string}
+
+                industry: {type:string}
+
+                job_title: {type:string}
+
+                job_desc: {type:string}
+
+                target_eight_dim: {type:string}
+
+                target_career21: {type:string}
+
+                total_question_count: {type:integer}
+
+                time_limit: {type:integer}
+
+                remark: {type:string}
+
+      responses:
+
+        200:
+
+          description: 返回生成考卷ID+题目预览列表
+
+  /company/exam/paper/{paperId}:
+
+    get:
+
+      summary: 获取考卷详情，预览题目
+
+      parameters: [{name:paperId,in:path,required:true,schema:{type:integer}}]
+
+      responses:
+
+        200:
+
+          description: 考卷完整信息
+
+    put:
+
+      summary: HR手动编辑考卷（增删题目）保存
+
+      parameters: [{name:paperId,in:path,required:true,schema:{type:integer}}]
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              type: object
+
+              properties:
+
+                question_ids: {type:string,description:"json数组"}
+
+      responses:
+
+        200:
+
+          description: 保存修改后的考卷
+
+  /company/exam/assign:
+
+    post:
+
+      summary: 分发考卷，绑定应聘者UID
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              type: object
+
+              properties:
+
+                paper_id: {type:integer}
+
+                user_uid: {type:string}
+
+      responses:
+
+        200:
+
+          description: 分发记录ID
+
+  /company/exam/assign/{assignId}/revoke:
+
+    post:
+
+      summary: 撤回未作答考卷
+
+      parameters: [{name:assignId,in:path,required:true,schema:{type:integer}}]
+
+      responses:
+
+        200:
+
+          description: 撤回成功
+
+  /company/exam/report/{assignId}:
+
+    get:
+
+      summary: 获取测评报告详情
+
+      parameters: [{name:assignId,in:path,required:true,schema:{type:integer}}]
+
+      responses:
+
+        200:
+
+          description: 返回雷达图数据、21职业TOP3、风险提示、一句话建议
+
+  /company/exam/report/{assignId}/pdf:
+
+    get:
+
+      summary: 导出报告PDF
+
+      parameters: [{name:assignId,in:path,required:true,schema:{type:integer}}]
+
+      responses:
+
+        200:
+
+          description: pdf文件流
+
+
+
+  # ========== 个人应聘者（考生）接口：登舰考试答题 ==========
+
+  /user/exam/list:
+
+    get:
+
+      summary: 获取分配给自己的考卷列表（登舰首页）
+
+      responses:
+
+        200:
+
+          description: 用户待作答考卷
+
+  /user/exam/paper/{assignId}:
+
+    get:
+
+      summary: 获取考卷题目，进入答题页
+
+      parameters: [{name:assignId,in:path,required:true,schema:{type:integer}}]
+
+      responses:
+
+        200:
+
+          description: 返回考卷题目，不返回评判规则
+
+  /user/exam/save-draft:
+
+    post:
+
+      summary: 保存答题草稿（自动定时调用）
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              type: object
+
+              properties:
+
+                assign_id: {type:integer}
+
+                answers: {type:string,description:"json作答数组"}
+
+      responses:
+
+        200:
+
+          description: 草稿保存成功
+
+  /user/exam/submit:
+
+    post:
+
+      summary: 提交整套答卷，触发后台异步测评任务
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              type: object
+
+              properties:
+
+                assign_id: {type:integer}
+
+                answers: {type:string}
+
+      responses:
+
+        200:
+
+          description: 提交成功，后台异步生成报告
+
+ 
+
+ 
+
+ 
+
+ 
+
+【第三项】算法可执行代码片段（Python版本，出题算法 + 测评分析引擎，独立文件  exam_algorithm.py ）
+
+ 
+
+依赖包： pip install hnswlib numpy 
+
+说明：独立文件，不和V1代码耦合；配置抽离到json，修改权重不用改代码
+
+ 
+
+python  
+
+# exam_algorithm.py
+
+# 新大陆俱乐部 V2.0 登舰考试：出题组卷算法 + 八维&21职业测评引擎
+
+import json
+
+import numpy as np
+
+import hnswlib
+
+
+
+# ===================== 配置文件读取（单独 exam-algorithm-config.json）=====================
+
+CONFIG_PATH = "exam-algorithm-config.json"
+
+def load_config():
+
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+
+        return json.load(f)
+
+ALG_CONFIG = load_config()
+
+
+
+# 21类职业预设标准能力向量，从配置读取
+
+career21_vectors = ALG_CONFIG["career21_vector"]
+
+# 八维能力列表
+
+EIGHT_DIM = ["探索力","想象力","理解力","拆解力","执行力","协作力","决策力","守护力"]
+
+
+
+# ===================== 模块1：出题基础组卷算法 =====================
+
+def generate_exam_paper(question_pool:list, demand_params:dict):
+
+    """
+
+    :param question_pool: 官方上线题库列表，从数据库查出
+
+    :param demand_params: HR传入招聘需求
+
+    :return: selected_questions 筛选出来的题目列表
+
+    """
+
+    target_eight = set(demand_params.get("target_eight_dim","").split(","))
+
+    target_career21 = set(demand_params.get("target_career21","").split(","))
+
+    need_total = int(demand_params.get("total_question_count",20))
+
+
+
+    scored_questions = []
+
+    for q in question_pool:
+
+        q_eight = set(q["eight_dim_tags"].split(",")) if q["eight_dim_tags"] else set()
+
+        q_career = set(q["career21_tags"].split(",")) if q["career21_tags"] else set()
+
+        # 标签匹配权重打分
+
+        score = 0
+
+        score += ALG_CONFIG["weight_eight"] * len(q_eight & target_eight)
+
+        score += ALG_CONFIG["weight_career21"] * len(q_career & target_career21)
+
+        score += q["weight_score"] * ALG_CONFIG["weight_base"]
+
+        scored_questions.append({"question":q,"match_score":score})
+
+
+
+    # 降序排序
+
+    scored_questions.sort(key=lambda x:x["match_score"], reverse=True)
+
+    selected_raw = [item["question"] for item in scored_questions]
+
+
+
+    # 题型多样性约束
+
+    final = []
+
+    type_counter = {"single":0,"multiple":0,"essay":0}
+
+    for q in selected_raw:
+
+        if len(final) >= need_total:
+
+            break
+
+        qt = q["question_type"]
+
+        # 限制同题型占比，防止全部简答
+
+        max_per_type = max(3, int(need_total * ALG_CONFIG["type_ratio"][qt]))
+
+        if type_counter[qt] < max_per_type:
+
+            final.append(q)
+
+            type_counter[qt] +=1
+
+
+
+    # 兜底：数量不足，放宽标签，直接取剩余题库填充
+
+    if len(final) < need_total:
+
+        remain = [x["question"] for x in scored_questions if x["question"] not in final]
+
+        supplement = remain[: need_total - len(final)]
+
+        final.extend(supplement)
+
+    return final
+
+
+
+# ===================== 模块2：测评分析引擎：八维打分 + 21职业余弦相似度匹配 =====================
+
+def calculate_eight_dim_score(answer_records:list, question_lib:list):
+
+    """计算八维能力0~100分"""
+
+    dim_sum = {dim:0.0 for dim in EIGHT_DIM}
+
+    dim_max_score = {dim:0.0 for dim in EIGHT_DIM}
+
+    q_map = {q["id"]:q for q in question_lib}
+
+    for ans in answer_records:
+
+        q = q_map.get(ans["question_id"])
+
+        if not q:
+
+            continue
+
+        ans_score = calc_single_question_score(q, ans["user_answer"])
+
+        q_tags = q["eight_dim_tags"].split(",") if q["eight_dim_tags"] else []
+
+        w = float(q["weight_score"])
+
+        for tag in q_tags:
+
+            if tag in dim_sum:
+
+                dim_sum[tag] += ans_score * w
+
+                dim_max_score[tag] += 10 * w
+
+    #归一化0~100
+
+    result = {}
+
+    for d in EIGHT_DIM:
+
+        if dim_max_score[d] ==0:
+
+            result[d] = 0
+
+        else:
+
+            result[d] = round( dim_sum[d]/dim_max_score[d] * 100, 2)
+
+    return result
+
+
+
+def calc_single_question_score(question, user_ans):
+
+    """单题打分，单选多选自动判分；简答返回0，标记人工复核"""
+
+    qt = question["question_type"]
+
+    judge = json.loads(question["judge_rule"])
+
+    if qt in ["single","multiple"]:
+
+        correct = set(judge["correct"])
+
+        user = set(user_ans.split(","))
+
+        match_rate = len(correct & user)/ max(len(correct),1)
+
+        return match_rate * 10
+
+    else:
+
+        #简答题，算法只输出参考，不自动打分，报告提示人工复核
+
+        return 0
+
+
+
+def match_21_career(eight_dim_scores:dict):
+
+    """基于八维分数向量，余弦相似度匹配TOP3 21型职业"""
+
+    vec = np.array([eight_dim_scores[d] for d in EIGHT_DIM], dtype=np.float32)
+
+    vec = vec / np.linalg.norm(vec) if np.linalg.norm(vec) !=0 else vec
+
+    career_list = []
+
+    for name, cv in career21_vectors.items():
+
+        cv_np = np.array(cv, dtype=np.float32)
+
+        cv_np = cv_np / np.linalg.norm(cv_np) if np.linalg.norm(cv_np) !=0 else cv_np
+
+        sim = np.dot(vec, cv_np)
+
+        career_list.append({"career_name":name,"similarity":round(float(sim),3)})
+
+    career_list.sort(key=lambda x:x["similarity"], reverse=True)
+
+    return career_list[:3]
+
+
+
+def detect_risk_tip(answer_records, eight_dim_scores):
+
+    """识别嘴炮/实干风险特征（基于调研规则库）"""
+
+    tips = []
+
+    # 这里规则可在配置文件维护，无需修改代码，示例规则
+
+    if eight_dim_scores["拆解力"] <30 and eight_dim_scores["想象力"]>75:
+
+        tips.append("风险提示：想象力强但落地拆解偏弱，需警惕偏理论、嘴炮倾向，建议面试深度追问项目落地细节")
+
+    if eight_dim_scores["执行力"]>70 and eight_dim_scores["守护力"]>70:
+
+        tips.append("优势：执行力与底线意识强，实干属性突出")
+
+    return ";".join(tips)
+
+
+
+def generate_final_suggest(top3_career, risk_tip):
+
+    """生成一句话录用建议"""
+
+    top1 = top3_career[0]["career_name"]
+
+    if "风险提示" in risk_tip and "嘴炮" in risk_tip:
+
+        return f"候选人最适配岗位类型：{top1}；存在落地能力风险，建议增加线下深度面试核验项目真实性"
+
+    else:
+
+        return f"候选人最适配岗位类型：{top1}；实干特质较好，推荐进入下一面试环节"
+
+
+
+# ===================== 统一入口：答卷提交后调用主函数 =====================
+
+def exam_analysis_main(answer_records:list, question_lib:list):
+
+    eight_score = calculate_eight_dim_score(answer_records, question_lib)
+
+    top3_career = match_21_career(eight_score)
+
+    risk_tip = detect_risk_tip(answer_records, eight_score)
+
+    final_suggest = generate_final_suggest(top3_career, risk_tip)
+
+    return {
+
+        "eight_dim_score": eight_score,
+
+        "career21_result": top3_career,
+
+        "risk_tip": risk_tip,
+
+        "final_suggest": final_suggest
+
+    }
+
+
+
+if __name__ == "__main__":
+
+    # 本地测试入口，开发调试用
+
+    print("Algorithm module loaded successfully")
+
+ 
+
+ 
+
+配套配置文件  exam-algorithm-config.json 
+
+ 
+
+json  
+
+{
+
+  "weight_eight":1.2,
+
+  "weight_career21":1.0,
+
+  "weight_base":0.8,
+
+  "type_ratio":{
+
+    "single":0.4,
+
+    "multiple":0.35,
+
+    "essay":0.25
+
+  },
+
+  "career21_vector":{
+
+    "探索者":[85,78,60,40,30,50,40,35],
+
+    "发现者":[82,80,65,42,33,48,42,38],
+
+    "观察者":[75,60,72,50,40,60,45,55],
+
+    "研究者":[80,65,75,62,45,42,50,60],
+
+    "想象者":[65,90,60,40,35,45,35,30],
+
+    "提案者":[78,72,68,55,48,70,62,45],
+
+    "连接者":[70,68,75,45,50,85,60,48],
+
+    "指引者":[60,62,78,70,65,72,78,65],
+
+    "战略师":[58,75,70,78,60,65,82,70],
+
+    "架构师":[55,60,80,85,70,60,72,75],
+
+    "拆解师":[52,55,82,90,75,62,68,70],
+
+    "设计师":[72,85,70,68,62,65,55,50],
+
+    "工程师":[48,50,75,82,85,60,65,78],
+
+    "执行者":[45,40,65,70,90,75,55,72],
+
+    "导航者":[55,60,72,68,65,70,85,80],
+
+    "决策者":[50,65,70,72,70,68,90,75],
+
+    "监督者":[42,45,75,65,78,62,72,88],
+
+    "风险官":[40,42,70,72,68,60,82,90],
+
+    "审核者":[45,40,78,70,72,65,75,85],
+
+    "仲裁者":[52,58,80,65,68,78,85,82],
+
+    "守门人":[40,38,72,60,75,68,70,92]
+
+  }
+
+}
+
+ 
+
+ 
+
+ 
+
+ 
+
+打包交付清单汇总（给AtomCode直接复制）
+
+ 
+
+1.  exam_v2_create_table.sql  — MySQL增量建表脚本
+
+2.  exam-api-v2.yaml  — OpenAPI3.0接口文档（导入Swagger/Apifox）
+
+3.  exam_algorithm.py  — 出题+测评算法核心代码
+
+4.  exam-algorithm-config.json  — 算法权重配置文件（无需改代码，可后台映射读取）
+
+ 
+
+下一步可选工作
+
+ 
+
+1. 生成前端页面Vue组件代码（题库管理页、HR考卷生成页、考生答题页、测评报告雷达图页面）
+
+2. 编写bull异步任务队列完整后端代码（答卷提交后异步跑测评，防止接口超时）
+
+
+
+
+
+交付内容：Vue前端组件 + Bull异步任务后端代码
+
+ 
+
+项目说明：基于V2.0登舰考试模块，增量新增，不改动原有V1页面；Vue2/Vue3通用（示例采用Vue3 + Composition API + ECharts雷达图）；Bull任务队列基于NodeJS后端，对接前面的 exam_algorithm.py 测评算法。
+
+ 
+
+前置依赖安装（复制到终端执行）
+
+ 
+
+bash  
+
+# 前端
+
+npm install echarts sheetjs localforage
+
+# 后端任务队列
+
+npm install bull redis axios
+
+ 
+
+ 
+
+ 
+
+ 
+
+一、Vue3 前端组件代码
+
+ 
+
+组件1：运营后台 - 官方题库管理页面  src/views/admin/QuestionLib.vue 
+
+ 
+
+vue  
+
+<template>
+
+  <div class="question-lib-container p-4">
+
+    <div class="header flex justify-between mb-4">
+
+      <h2>官方题库管理</h2>
+
+      <div>
+
+        <el-button type="primary" @click="openAddDialog">新增题目</el-button>
+
+        <el-button @click="handleImport">批量导入Excel</el-button>
+
+        <el-button @click="handleExport">导出题库</el-button>
+
+      </div>
+
+    </div>
+
+    <el-form :inline="true" :model="searchForm" class="search-form mb-4">
+
+      <el-form-item label="八维标签">
+
+        <el-input v-model="searchForm.eight_dim_tags"></el-input>
+
+      </el-form-item>
+
+      <el-form-item label="21职业标签">
+
+        <el-input v-model="searchForm.career21_tags"></el-input>
+
+      </el-form-item>
+
+      <el-form-item label="状态">
+
+        <el-select v-model="searchForm.status">
+
+          <el-option label="全部" value=""></el-option>
+
+          <el-option label="上线" :value="1"></el-option>
+
+          <el-option label="下线" :value="0"></el-option>
+
+        </el-select>
+
+      </el-form-item>
+
+      <el-form-item>
+
+        <el-button type="primary" @click="fetchList">查询</el-button>
+
+      </el-form-item>
+
+    </el-form>
+
+    <el-table :data="tableData" border stripe>
+
+      <el-table-column prop="id" label="ID" width="80"/>
+
+      <el-table-column prop="title" label="题干"/>
+
+      <el-table-column prop="question_type" label="题型"/>
+
+      <el-table-column prop="eight_dim_tags" label="八维标签"/>
+
+      <el-table-column prop="career21_tags" label="21职业标签"/>
+
+      <el-table-column prop="status" label="状态">
+
+        <template #default="scope">
+
+          <span :class="scope.row.status===1?'text-green':'text-red'">
+
+            {{ scope.row.status===1?'上线':'下线' }}
+
+          </span>
+
+        </template>
+
+      </el-table-column>
+
+      <el-table-column label="操作">
+
+        <template #default="scope">
+
+          <el-button size="small" @click="openEditDialog(scope.row)">编辑</el-button>
+
+          <el-button size="small" type="danger" @click="handleDel(scope.row.id)">删除</el-button>
+
+        </template>
+
+      </el-table-column>
+
+    </el-table>
+
+    <el-pagination
+
+      v-model:current-page="page.page"
+
+      v-model:page-size="page.size"
+
+      :total="total"
+
+      @current-change="fetchList"
+
+    />
+
+    <!-- 新增/编辑弹窗 -->
+
+    <el-dialog v-model="dialogVisible" title="题目编辑">
+
+      <el-form :model="form">
+
+        <el-form-item label="题干">
+
+          <el-input v-model="form.title" type="textarea"></el-input>
+
+        </el-form-item>
+
+        <el-form-item label="题型">
+
+          <el-select v-model="form.question_type">
+
+            <el-option label="单选" value="single"/>
+
+            <el-option label="多选" value="multiple"/>
+
+            <el-option label="简答" value="essay"/>
+
+          </el-select>
+
+        </el-form-item>
+
+        <el-form-item label="选项JSON">
+
+          <el-input v-model="form.options" type="textarea"></el-input>
+
+        </el-form-item>
+
+        <el-form-item label="评判规则">
+
+          <el-input v-model="form.judge_rule" type="textarea"></el-input>
+
+        </el-form-item>
+
+        <el-form-item label="八维标签(逗号分隔)">
+
+          <el-input v-model="form.eight_dim_tags"></el-input>
+
+        </el-form-item>
+
+        <el-form-item label="21职业标签(逗号分隔)">
+
+          <el-input v-model="form.career21_tags"></el-input>
+
+        </el-form-item>
+
+        <el-form-item label="权重分值">
+
+          <el-input v-model.number="form.weight_score"></el-input>
+
+        </el-form-item>
+
+        <el-form-item label="状态">
+
+          <el-select v-model="form.status">
+
+            <el-option label="上线" :value="1"/>
+
+            <el-option label="下线" :value="0"/>
+
+          </el-select>
+
+        </el-form-item>
+
+      </el-form>
+
+      <template #footer>
+
+        <el-button @click="dialogVisible=false">取消</el-button>
+
+        <el-button type="primary" @click="submitForm">保存</el-button>
+
+      </template>
+
+    </el-dialog>
+
+    <!-- 文件上传 -->
+
+    <input ref="fileRef" type="file" accept=".xlsx,.xls" hidden @change="onFileChange"/>
+
+  </div>
+
+</template>
+
+<script setup>
+
+import { ref, reactive } from 'vue'
+
+import { ElMessage } from 'element-plus'
+
+import axios from 'axios'
+
+import * as XLSX from 'sheetjs'
+
+
+
+const tableData = ref([])
+
+const total = ref(0)
+
+const page = reactive({ page:1, size:20 })
+
+const searchForm = reactive({
+
+  eight_dim_tags:'',
+
+  career21_tags:'',
+
+  status:''
+
+})
+
+const dialogVisible = ref(false)
+
+const form = ref({})
+
+const fileRef = ref(null)
+
+
+
+async function fetchList(){
+
+  const res = await axios.get('/api/v2/admin/question/list',{
+
+    params:{...searchForm, page:page.page, size:page.size}
+
+  })
+
+  tableData.value = res.data.records
+
+  total.value = res.data.total
+
+}
+
+function openAddDialog(){
+
+  form.value = {
+
+    title:'',question_type:'single',options:'',judge_rule:'',
+
+    eight_dim_tags:'',career21_tags:'',weight_score:5,status:1
+
+  }
+
+  dialogVisible.value=true
+
+}
+
+function openEditDialog(row){
+
+  form.value = {...row}
+
+  dialogVisible.value=true
+
+}
+
+async function submitForm(){
+
+  if(form.value.id){
+
+    await axios.put(`/api/v2/admin/question/${form.value.id}`,form.value)
+
+  }else{
+
+    await axios.post('/api/v2/admin/question/add',form.value)
+
+  }
+
+  dialogVisible.value=false
+
+  ElMessage.success('保存成功')
+
+  fetchList()
+
+}
+
+async function handleDel(id){
+
+  await axios.delete(`/api/v2/admin/question/${id}`)
+
+  ElMessage.success('删除成功')
+
+  fetchList()
+
+}
+
+function handleImport(){
+
+  fileRef.value.click()
+
+}
+
+async function onFileChange(e){
+
+  const file = e.target.files[0]
+
+  const fd = new FormData()
+
+  fd.append('file',file)
+
+  const res = await axios.post('/api/v2/admin/question/batch-import',fd)
+
+  ElMessage.success(`导入成功${res.data.successCount}行，错误:${res.data.errorRows}`)
+
+  fetchList()
+
+}
+
+async function handleExport(){
+
+  window.open('/api/v2/admin/question/export')
+
+}
+
+fetchList()
+
+</script>
+
+ 
+
+ 
+
+组件2：HR后台 - 考卷生成页面  src/views/company/ExamPaperCreate.vue 
+
+ 
+
+vue  
+
+<template>
+
+  <div class="paper-create p-4">
+
+    <h2>新建登舰智考考卷</h2>
+
+    <el-form :model="form" label-width="160px">
+
+      <el-form-item label="考卷名称">
+
+        <el-input v-model="form.paper_name"/>
+
+      </el-form-item>
+
+      <el-form-item label="所属行业">
+
+        <el-input v-model="form.industry"/>
+
+      </el-form-item>
+
+      <el-form-item label="招聘岗位">
+
+        <el-input v-model="form.job_title"/>
+
+      </el-form-item>
+
+      <el-form-item label="岗位描述">
+
+        <el-input v-model="form.job_desc" type="textarea"/>
+
+      </el-form-item>
+
+      <el-form-item label="重点考察八维能力">
+
+        <el-input v-model="form.target_eight_dim" placeholder="逗号分隔"/>
+
+      </el-form-item>
+
+      <el-form-item label="期望匹配21职业">
+
+        <el-input v-model="form.target_career21" placeholder="逗号分隔"/>
+
+      </el-form-item>
+
+      <el-form-item label="题目总数">
+
+        <el-input v-model.number="form.total_question_count"/>
+
+      </el-form-item>
+
+      <el-form-item label="考试限时(分钟，空=不限时)">
+
+        <el-input v-model.number="form.time_limit"/>
+
+      </el-form-item>
+
+      <el-form-item label="用人备注">
+
+        <el-input v-model="form.remark" type="textarea"/>
+
+      </el-form-item>
+
+      <el-form-item>
+
+        <el-button type="primary" @click="genPaper">一键生成考卷</el-button>
+
+      </el-form-item>
+
+    </el-form>
+
+    <div v-if="previewList.length>0" class="preview mt-6">
+
+      <h3>考卷预览，可手动增删题目</h3>
+
+      <el-table :data="previewList" border stripe>
+
+        <el-table-column prop="title" label="题干"/>
+
+        <el-table-column prop="question_type" label="题型"/>
+
+        <el-table-column label="操作">
+
+          <template #default="scope">
+
+            <el-button size="small" type="danger" @click="removeItem(scope.$index)">移除</el-button>
+
+          </template>
+
+        </el-table-column>
+
+      </el-table>
+
+      <el-button type="success" class="mt-2" @click="savePaper">保存考卷</el-button>
+
+      <el-button class="mt-2 ml-2" @click="openAssignDialog">分发考卷给候选人</el-button>
+
+    </div>
+
+    <!--分发弹窗-->
+
+    <el-dialog v-model="assignDialog" title="分发考卷">
+
+      <el-form>
+
+        <el-form-item label="候选人唯一UID">
+
+          <el-input v-model="assignUid"/>
+
+        </el-form-item>
+
+      </el-form>
+
+      <template #footer>
+
+        <el-button @click="assignDialog=false">取消</el-button>
+
+        <el-button type="primary" @click="doAssign">分发</el-button>
+
+      </template>
+
+    </el-dialog>
+
+  </div>
+
+</template>
+
+<script setup>
+
+import {ref,reactive} from 'vue'
+
+import {ElMessage} from 'element-plus'
+
+import axios from 'axios'
+
+const form = reactive({
+
+  paper_name:'',industry:'',job_title:'',job_desc:'',
+
+  target_eight_dim:'',target_career21:'',total_question_count:20,
+
+  time_limit:null,remark:''
+
+})
+
+const previewList = ref([])
+
+let currentPaperId = ref(null)
+
+const assignDialog = ref(false)
+
+const assignUid = ref('')
+
+
+
+async function genPaper(){
+
+  const res = await axios.post('/api/v2/company/exam/create-paper',form)
+
+  currentPaperId.value = res.data.paperId
+
+  previewList.value = res.data.questions
+
+  ElMessage.success('考卷生成完成')
+
+}
+
+function removeItem(idx){
+
+  previewList.value.splice(idx,1)
+
+}
+
+async function savePaper(){
+
+  const ids = previewList.value.map(q=>q.id)
+
+  await axios.put(`/api/v2/company/exam/paper/${currentPaperId.value}`,{
+
+    question_ids: JSON.stringify(ids)
+
+  })
+
+  ElMessage.success('考卷保存成功')
+
+}
+
+async function doAssign(){
+
+  await axios.post('/api/v2/company/exam/assign',{
+
+    paper_id: currentPaperId.value,
+
+    user_uid: assignUid.value
+
+  })
+
+  ElMessage.success('考卷分发成功')
+
+  assignDialog.value = false
+
+}
+
+</script>
+
+ 
+
+ 
+
+组件3：考生答题页面  src/views/user/ExamAnswer.vue 
+
+ 
+
+vue  
+
+<template>
+
+  <div class="exam-container p-4 max-w-3xl mx-auto">
+
+    <h2>登舰考试</h2>
+
+    <div class="q-item my-4 border p-3" v-for="(q,idx) in questionList" :key="q.id">
+
+      <div class="q-title font-bold mb-2">{{idx+1}}. {{q.title}}</div>
+
+      <div v-if="q.question_type==='single'">
+
+        <el-radio-group v-model="answerMap[q.id]" @change="autoSaveDraft">
+
+          <el-radio v-for="opt in q.options" :key="opt.key" :label="opt.key">{{opt.val}}</el-radio>
+
+        </el-radio-group>
+
+      </div>
+
+      <div v-if="q.question_type==='multiple'">
+
+        <el-checkbox-group v-model="answerMap[q.id]" @change="autoSaveDraft">
+
+          <el-checkbox v-for="opt in q.options" :key="opt.key" :label="opt.key">{{opt.val}}</el-checkbox>
+
+        </el-checkbox-group>
+
+      </div>
+
+      <div v-if="q.question_type==='essay'">
+
+        <el-input v-model="answerMap[q.id]" type="textarea" @blur="autoSaveDraft" placeholder="输入你的回答"/>
+
+      </div>
+
+    </div>
+
+    <el-button type="primary" @click="submitExam">提交答卷</el-button>
+
+  </div>
+
+</template>
+
+<script setup>
+
+import {ref, onMounted} from 'vue'
+
+import {ElMessage} from 'element-plus'
+
+import axios from 'axios'
+
+import localforage from 'localforage'
+
+import {useRoute} from 'vue-router'
+
+const route = useRoute()
+
+const assignId = route.params.assignId
+
+const questionList = ref([])
+
+const answerMap = ref({})
+
+
+
+// 草稿本地存储
+
+async function autoSaveDraft(){
+
+  await localforage.setItem(`draft_${assignId}`, answerMap.value)
+
+}
+
+async function loadDraft(){
+
+  const cache = await localforage.getItem(`draft_${assignId}`)
+
+  if(cache) answerMap.value = cache
+
+}
+
+async function fetchPaper(){
+
+  const res = await axios.get(`/api/v2/user/exam/paper/${assignId}`)
+
+  questionList.value = res.data.questions
+
+  await loadDraft()
+
+}
+
+async function submitExam(){
+
+  const answers = JSON.stringify(answerMap.value)
+
+  await axios.post('/api/v2/user/exam/submit',{assign_id:assignId, answers})
+
+  ElMessage.success('答卷提交成功，等待测评分析')
+
+  await localforage.removeItem(`draft_${assignId}`)
+
+}
+
+onMounted(()=>fetchPaper())
+
+</script>
+
+ 
+
+ 
+
+组件4：测评报告雷达图页面  src/views/company/ExamReport.vue 
+
+ 
+
+vue  
+
+<template>
+
+  <div class="report-container p-4">
+
+    <h2>候选人登舰测评报告</h2>
+
+    <div class="flex gap-4">
+
+      <div class="w-1/2">
+
+        <div ref="radarRef" style="width:400px;height:400px;"></div>
+
+      </div>
+
+      <div class="w-1/2">
+
+        <el-card>
+
+          <p><b>TOP3 适配职业：</b></p>
+
+          <div v-for="item in careerList" :key="item.career_name">
+
+            {{item.career_name}} ｜ 相似度：{{item.similarity}}
+
+          </div>
+
+          <p class="mt-4"><b>风险提示：</b>{{riskTip}}</p>
+
+          <p class="mt-4 text-lg text-red-600"><b>录用建议：</b>{{finalSuggest}}</p>
+
+        </el-card>
+
+      </div>
+
+    </div>
+
+    <el-button class="mt-4" @click="exportPdf">导出PDF报告</el-button>
+
+  </div>
+
+</template>
+
+<script setup>
+
+import {ref,onMounted} from 'vue'
+
+import * as echarts from 'echarts'
+
+import axios from 'axios'
+
+import {useRoute} from 'vue-router'
+
+const route = useRoute()
+
+const assignId = route.params.assignId
+
+const radarRef = ref(null)
+
+let chart = null
+
+const careerList = ref([])
+
+const riskTip = ref('')
+
+const finalSuggest = ref('')
+
+
+
+async function loadReport(){
+
+  const res = await axios.get(`/api/v2/company/exam/report/${assignId}`)
+
+  const data = res.data
+
+  careerList.value = data.career21_result
+
+  riskTip.value = data.risk_tip
+
+  finalSuggest.value = data.final_suggest
+
+
+
+  // 雷达图渲染
+
+  chart = echarts.init(radarRef.value)
+
+  const option = {
+
+    radar: {
+
+      indicator: [
+
+        {name:'探索力',max:100},{name:'想象力',max:100},{name:'理解力',max:100},
+
+        {name:'拆解力',max:100},{name:'执行力',max:100},{name:'协作力',max:100},
+
+        {name:'决策力',max:100},{name:'守护力',max:100}
+
+      ]
+
+    },
+
+    series:[{
+
+      type:'radar',
+
+      data:[{
+
+        value:[
+
+          data.eight_dim_score['探索力'],
+
+          data.eight_dim_score['想象力'],
+
+          data.eight_dim_score['理解力'],
+
+          data.eight_dim_score['拆解力'],
+
+          data.eight_dim_score['执行力'],
+
+          data.eight_dim_score['协作力'],
+
+          data.eight_dim_score['决策力'],
+
+          data.eight_dim_score['守护力']
+
+        ],
+
+        name:'候选人八维能力'
+
+      }]
+
+    }]
+
+  }
+
+  chart.setOption(option)
+
+}
+
+async function exportPdf(){
+
+  window.open(`/api/v2/company/exam/report/${assignId}/pdf`)
+
+}
+
+onMounted(()=>loadReport())
+
+</script>
+
+ 
+
+ 
+
+ 
+
+ 
+
+二、NodeJS后端 Bull异步任务队列完整代码
+
+ 
+
+文件路径： src/service/examTaskQueue.js 
+
+功能：答卷提交后，入队列，异步调用python测评脚本生成报告，避免接口超时
+
+ 
+
+javascript  
+
+// examTaskQueue.js
+
+const Bull = require('bull');
+
+const redisConfig = { host:'127.0.0.1', port:6379 };
+
+const examQueue = new Bull('exam-analysis-queue',{redis:redisConfig});
+
+const { exec } = require('child_process');
+
+const db = require('../db'); // 原有数据库实例
+
+
+
+// 消费任务：执行测评
+
+examQueue.process(async (job)=>{
+
+  const {assignId} = job.data;
+
+  console.log("开始执行测评任务 assignId:", assignId);
+
+  // 1. 查询答卷记录
+
+  const answerRecords = await db.query(`SELECT * FROM exam_answer_record WHERE assign_id = ?`,[assignId]);
+
+  // 2. 查询关联题目
+
+  const qIds = answerRecords.map(r=>r.question_id);
+
+  const questionList = await db.query(`SELECT * FROM exam_official_question WHERE id IN (?)`,[qIds]);
+
+  // 3. 调用python算法脚本，传入参数
+
+  const inputParam = JSON.stringify({answer_records:answerRecords, question_lib:questionList});
+
+  const cmd = `python3 exam_algorithm.py '${inputParam}'`;
+
+  return new Promise((resolve,reject)=>{
+
+    exec(cmd, (err,stdout,stderr)=>{
+
+      if(err){
+
+        console.error("算法执行错误",stderr);
+
+        return reject(err);
+
+      }
+
+      const reportData = JSON.parse(stdout);
+
+      // 4. 写入报告表 exam_report
+
+      db.query(`INSERT INTO exam_report(assign_id,eight_dim_score,career21_result,risk_tip,final_suggest) VALUES (?,?,?,?,?)`,
+
+        [
+
+          assignId,
+
+          JSON.stringify(reportData.eight_dim_score),
+
+          JSON.stringify(reportData.career21_result),
+
+          reportData.risk_tip,
+
+          reportData.final_suggest
+
+        ]
+
+      ).then(async (insRes)=>{
+
+        const reportId = insRes.insertId;
+
+        // 更新分发记录，回填report_id，状态=2
+
+        await db.query(`UPDATE exam_paper_assign SET report_id=?, status=2 WHERE id=?`,[reportId,assignId])
+
+        resolve(reportData)
+
+      }).catch(e=>reject(e))
+
+    })
+
+  })
+
+})
+
+
+
+// 任务入队函数，答卷提交接口调用此方法
+
+async function addExamAnalyzeTask(assignId){
+
+  await examQueue.add({assignId},{
+
+    attempts:3, // 失败重试3次
+
+    removeOnComplete:true
+
+  })
+
+}
+
+
+
+// 监听任务失败
+
+examQueue.on('failed',(job,err)=>{
+
+  console.error(`任务失败 assignId:${job.data.assignId}`,err)
+
+})
+
+
+
+module.exports = {addExamAnalyzeTask, examQueue}
+
+ 
+
+ 
+
+在答卷提交接口  /user/exam/submit  中集成队列（路由层片段）
+
+ 
+
+javascript  
+
+// routes/exam.js
+
+const {addExamAnalyzeTask} = require('../service/examTaskQueue')
+
+router.post('/user/exam/submit', async (ctx)=>{
+
+  const {assign_id, answers} = ctx.request.body;
+
+  // 1.保存答卷记录到 exam_answer_record
+
+  const ansObj = JSON.parse(answers)
+
+  for(const qId of Object.keys(ansObj)){
+
+    await db.query(`INSERT INTO exam_answer_record(assign_id,question_id,user_answer) VALUES (?,?,?)`,
+
+      [assign_id, qId, ansObj[qId]]
+
+    )
+
+  }
+
+  // 2. 更新分发记录为 已提交待分析 status=1
+
+  await db.query(`UPDATE exam_paper_assign SET submit_time=NOW(), status=1 WHERE id=?`,[assign_id])
+
+  // 3. 推入异步任务队列，直接返回前端，不等待算法执行
+
+  await addExamAnalyzeTask(assign_id)
+
+  ctx.body = {code:200, msg:"答卷提交成功，后台异步生成测评报告"}
+
+})
+
+ 
+
+ 
+
+注意：python脚本 exam_algorithm.py 需要修改主函数导出，接收命令行入参输出JSON结果，修改 exam_algorithm.py 底部代码片段：
+
+ 
+
+python  
+
+# exam_algorithm.py 底部修改
+
+if __name__ == "__main__":
+
+    import sys,json
+
+    if len(sys.argv)>1:
+
+        input_json = sys.argv[1]
+
+        param = json.loads(input_json)
+
+        res = exam_analysis_main(param["answer_records"], param["question_lib"])
+
+        print(json.dumps(res,ensure_ascii=False))
+
+    else:
+
+        print("Algorithm module loaded successfully")
+
+ 
+
+ 
+
+ 
+
+ 
+
+开发说明
+
+ 
+
+1. 前端组件基于Element Plus，如需Element UI(Vue2)只需要少量组件命名微调。
+
+2. Bull队列依赖Redis，启动项目前必须启动Redis服务。
+
+3. Python与Node通信采用子进程调用，适合黑客松Demo；生产环境可改为HTTP/GRPC分离微服务。
+
+4. 简答题目自动打分返回0，报告提示人工复核。
+
+
+

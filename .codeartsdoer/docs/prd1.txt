@@ -1,0 +1,5196 @@
+《新大陆俱乐部 New‑World‑Club V1.0 完整可落地PRD》
+
+ 
+
+文档版本： V1.0‑Hackathon2026‑商业落地版 
+
+适用：中客松2026「未定信号」赛道，同时兼顾赛后商业化迭代；文档直接交付 AtomCode 进行全栈开发；包含产品世界观、业务规则、前后端、数据库、多端适配、第三方开源组件清单、部署配置、MVP Demo最小运行分支、完整商业版本分支。
+
+重要区分：
+
+ 
+
+1.  branch:mvp‑hackathon ：黑客松比赛可运行版本（48小时可完成，魔搭创空间可部署，只保留赛道必须核心闭环）
+
+2.  branch:commercial‑v1 ：完整商业落地版本（多端、NPC语音TTS、游戏化交互、中台后台、信用经济模块骨架，用于赛后迭代）
+
+所有开源组件均标注GitHub仓库地址、安装命令、配置要点，AtomCode可直接复制执行。
+
+ 
+
+赛道前置约束（不可修改，全部功能设计对齐《中客松2026选手手册》未定信号赛道）
+
+核心命题：做一个别人抄不走、自己离不开的AI产品；产品能力依附用户私有持续积累的航行档案；更换用户私有航行档案，系统输出发生实质性差异；移除私有数据退化为通用工具；移除AI人力无法规模化处理业务。
+
+ 
+
+⚠️ 开发红线：
+
+ 
+
+1. 黑客松MVP分支不实现金融、代币、真实支付；仅保留「生产力凭证APU Credit」数据模型骨架，仅做本地实验性数值，禁止链上、真实金融逻辑；完整商业版本再扩展。
+
+2. AI舰载智能（Ship Intelligence）永远不替代人类最终决策，所有使命的方向、价值判断必须有人类确认按钮，Agent仅做辅助分析、拆解、检索、模拟。
+
+3. 用户航行档案、登舰测试原始回答属于用户私有数据，系统设计完整权限控制，符合赛道“数据授权、隐私保护”要求。
+
+ 
+
+ 
+
+ 
+
+目录
+
+ 
+
+1. 【00 产品总览 & 世界观叙事】
+
+2. 【01 业务目标、版本划分、范围边界】
+
+3. 【02 用户角色与用户画像】
+
+4. 【03 完整用户旅程 User Journey】
+
+5. 【04 全局信息架构｜前台 / 业务中台 / 多角色管理后台】
+
+6. 【05 八大业务系统完整需求规格】
+
+7. 【06 核心业务规则：21席、三舱、Mission闭环、组舰算法、航行档案】
+
+8. 【07 AI能力模型完整定义｜大模型Prompt、解析逻辑、向量计算】
+
+9. 【08 数据库完整设计：ER逻辑 + 全部数据表字段定义】
+
+10. 【09 多端产品设计：PC Web / H5自适应 / 安卓App / iOS App / 微信小程序】
+
+11. 【10 游戏化交互&语音TTS‑NPC对话系统需求】
+
+12. 【11 开源第三方组件清单｜GitHub地址、安装命令、配置参数，AtomCode直接使用】
+
+13. 【12 接口概要设计（RESTful）】
+
+14. 【13 MVP‑Hackathon分支 Demo完整执行流程（比赛演示专用）】
+
+15. 【14 部署架构、环境配置、CI/CD】
+
+16. 【15 非功能需求：性能、安全、隐私、可观测】
+
+17. 【16 风险清单 & 降级策略】
+
+18. 【17 交付物清单｜代码、文档、比赛提交材料】
+
+ 
+
+ 
+
+ 
+
+00 产品总览 & 世界观叙事
+
+ 
+
+00.1 产品名称
+
+ 
+
+- 中文：新大陆俱乐部
+
+- 英文：New World Club，缩写 NWC
+
+- 产品定位：人类星际协作操作系统 Human Expedition Operating System
+
+ 
+
+赛道定位（比赛）：未定信号赛道，招聘校准方向高阶变体，基于用户私有协作航行档案，完成复杂创新使命的人机协同编组平台。
+
+商业定位（赛后）：面向创新团队、开源社区、科研项目、社会创新组织的人机协同协作基础设施。
+
+ 
+
+00.2 核心Slogan
+
+ 
+
+不是寻找最优秀的人，而是寻找可以共同完成伟大航行的互补个体。
+
+AI让星舰跑得更快，人类决定星舰驶向何方。
+
+ 
+
+00.3 完整世界观（产品内全部文案、NPC对话、页面叙事全部来源于此）
+
+ 
+
+历史：1493年大西洋风暴，哥伦布船队。船长无法掌控风暴，舵手无法决定目的地，水手不能做战略，瞭望员无法修船；每一个岗位各司其职，所有人的行动指向同一个航向，船队才得以幸存。
+
+现在：人类进入AI时代，我们寻找的不再仅仅是地理新大陆，而是八种新大陆：新知识、新职业、新组织、新文明、新生产方式、新社会结构、新人机协作方式、新经济运行方式。
+
+隐喻：每一次复杂创新使命，就是一次星际远航；项目团队就是一艘星舰；参与者不是求职者，而是登舰舰员；简历是自我宣传，航行档案是真实协作行为沉淀的私有资产；舰载智能Ship Intelligence是星舰AI算力系统，它增强人类，但永远不能替代人类对使命的价值判断。
+
+核心概念：
+
+ 
+
+- 登舰：用户申请加入协作网络，完成登舰测试，获得地球文明编号 NW‑XXXX
+
+- 航行档案（Expedition Passport）：用户核心私有数据资产，本产品的护城河
+
+- 21席 21 Seats：21种复杂使命所必需的认知功能席位，≠职业、≠岗位招聘；分为探索舱、建造舱、治理舱，每舱7席。
+
+- 舰队Expedition Formation：针对一个Mission使命，由系统基于航行档案匹配生成的互补协作单元；21席是职能全集，允许单人兼任多席，允许舰载智能临时补位部分执行席位，治理舱决策、守门、风险席位必须由真人担任。
+
+- Mission航行使命：复杂创新任务，固定闭环：提出 → 指引 → 拆解 → 执行 → 监督 → 决策 → 审核
+
+- 舰载智能 Ship Intelligence：Agent集群，多Agent协同，不掌握使命决策权；输出全部需要人类确认。
+
+- APU AI生产力单元：商业V1.0概念，一个由【人‑能力‑Agent‑算力‑数据‑场景】组成的生产单元；黑客松MVP仅保留数据模型，不实现真实经济闭环。
+
+- APU Credit新大陆生产力凭证：用户协作贡献的实验性信用积分；MVP仅本地模拟，无金融属性。
+
+ 
+
+00.4 赛道四大自检标准答案（写入系统文档、海报、Innovate Trace航迹）
+
+ 
+
+1. 真实问题：复杂创新使命场景下，现有组队工具依赖简历、自我标签；简历是主观自我描述，无法表征人的认知模式、风险偏好、历史协作表现；团队经常出现技能齐全，但认知职能席位缺失，项目失败，大量人力沉没。目标用户：创新使命参与者、开源协作成员、社会创新项目团队。
+
+2. 独有数据：用户私有航行档案，包含①登舰测试原始开放式作答、推理路径；②每一次Mission完成回填的真实协作表现、席位产出、反馈记录；该数据集仅属于该用户，外部无法获取；持续积累，越用越独特。
+
+3. 个体差异：更换一份用户完整航行档案，同一Mission、同一候选池，系统输出的21席画像、舰队编组方案发生实质性改变。路演必须做对照实验。
+
+4. 长期价值：持续使用，用户沉淀不可替代的航行护照；包含历次使命的真实协作证据，离开本系统，全部协作证据资产丢失，需要重新证明自身协作能力。
+
+ 
+
+00.5 两道“去掉测试”（产品设计必须满足）
+
+ 
+
+1. 去掉私有航行档案数据：系统退化为一套通用情景心理问卷，无法输出个性化21席画像、无法完成定制化组舰。
+
+2. 去掉AI舰载智能：人工处理几十位候选者的开放式文本解析、多维度能力评估、互补舰队编组，人力成本极高，无法规模化。
+
+ 
+
+ 
+
+ 
+
+01 业务目标、版本划分、范围边界
+
+ 
+
+1.1 版本分支定义（代码仓库两个主分支，AtomCode严格区分）
+
+ 
+
+分支A： mvp‑hackathon 【比赛MVP，48小时交付，部署魔搭创空间】
+
+ 
+
+目标：完整跑通赛道要求Demo闭环，满足中客松全部提交要求；不做完整多端App、不做真实金融、不做大规模用户、不做实时多人协同。
+
+支持平台：PC Web + H5移动端自适应；
+
+砍掉：安卓/iOS原生App、微信小程序、完整中台后台、大规模多用户实时协同、真实TTS‑NPC完整游戏化；仅保留TTS文字转语音Demo样例；APU Credit仅为数据库字段模拟；
+
+必须实现核心闭环：
+
+ 申请登舰 → 登舰情景测试(开放式问答，AI解析) → 生成初始化航行档案&21席画像 → 候选池管理 → AI组舰算法（支持两套档案对照演示） → 舰桥工作台Mission可视化 → 舰载智能Agent模拟 → Mission模拟完成，回填航行档案 → 航行护照查看 
+
+ 
+
+分支B： commercial‑v1 【商业完整版本，赛后迭代】
+
+ 
+
+目标：完整可商用产品，全端覆盖，完整中台后台，完整游戏化NPC语音交互，完整APU生产力单元骨架、组织权限体系、企业租户模式。
+
+支持平台：PC Web、H5自适应、微信小程序、安卓原生App、iOS原生App。
+
+在MVP全部功能基础上增加：多租户组织、完整权限中台、NPC对话交互、完整TTS语音、消息推送、实时多人协同工作台、贡献信用系统、APU生产力单元管理、运营后台、数据分析看板。
+
+ 
+
+1.2 不在本期实现（无论MVP/Commercial V1）
+
+ 
+
+1. 区块链、代币、加密货币、真实融资信贷；APU Credit仅做系统内贡献积分，不与法币打通。
+
+2. 大规模百万用户高并发（架构预留扩展，第一版目标支持数千用户）。
+
+3. 真实第三方算力采购、硬件调度；仅做业务模型，不对接GPU硬件底层。
+
+ 
+
+1.3 交付给比赛的产出（mvp‑hackathon分支输出物）
+
+ 
+
+1. 可访问Web Demo链接（魔搭创空间部署，Running状态）
+
+2. ≥2分钟演示视频，包含两套航行档案对照演示
+
+3. 竖版项目海报80×180cm（4:9）
+
+4. Innovate Trace航迹文档（问题/数据/验证/迭代）
+
+5. 可选：Github开源代码仓库链接
+
+ 
+
+ 
+
+ 
+
+02 用户角色与用户画像
+
+ 
+
+系统分为前台普通舰员角色、组织管理员角色、平台中台运营角色、超级管理员；MVP分支只实现【舰员】+简易平台管理员；commercial‑v1完整实现全部角色权限。
+
+ 
+
+2.1 角色清单
+
+ 
+
+角色 角色说明 MVP是否实现 Commercial‑V1 
+
+舰员 Expedition Member 普通注册用户；申请登舰，完成测试；拥有个人航行护照；可以加入候选池；参与Mission舰队；使用舰桥工作台；使用舰载智能Agent；可以发起Mission使命。 ✅完整实现 ✅完整实现 
+
+舰队指挥官 Fleet Commander 某一个Mission的负责人；发起航行使命；设置Mission目标、约束；执行组舰；管理本舰队舰员；确认Mission阶段交付；审核协作反馈，回填舰员航行档案。 ✅MVP简化实现，单Mission指挥官 ✅完整，支持指挥官委派权限 
+
+组织管理员 Org Admin 商业版本：企业/创新组织租户管理员；管理组织内舰员、组织候选池、组织Mission；组织数据隔离。 ❌MVP不实现 ✅完整权限 
+
+平台运营运营官 Platform Operator 中台运营后台；管理系统全局题库、系统模板、内容审核、系统公告、统计看板；不可直接修改用户航行档案，只能查看脱敏统计。 ❌MVP仅简易超级管理员 ✅完整中台后台 
+
+超级管理员 Super Admin 底层系统权限；数据库维护、系统配置、第三方密钥管理；严禁业务操作。 ✅MVP最小实现 ✅完整 
+
+ 
+
+2.2 用户画像
+
+ 
+
+画像A：创新项目参与者（核心用户）
+
+ 
+
+22‑40岁；黑客松选手、开源贡献者、社会创新项目成员、科研项目成员；需要组队完成复杂创新任务；厌烦只靠简历、标签的传统组队；希望找到认知互补的伙伴；希望沉淀自己真实的协作证据，而不是一份美化简历。
+
+ 
+
+画像B：使命发起者（舰队指挥官）
+
+ 
+
+创新项目负责人、实验室负责人、项目发起人；手上拥有复杂Mission；很难评估候选人真实协作能力；希望系统辅助自己组建平衡的协作团队；需要记录项目中每个人的真实表现。
+
+ 
+
+画像C：平台运营人员（商业版本）
+
+ 
+
+平台运营，维护登舰测试题库，维护Mission模板，查看平台整体航行数据统计，处理用户申诉。
+
+ 
+
+2.3 用户非功能性诉求
+
+ 
+
+1. 隐私：我的航行档案属于我本人，我可以授权谁查看我的哪些数据，可以随时导出全部个人数据。
+
+2. 可解释：AI输出的21席得分、组舰建议，必须给出依据，不是黑盒；每一项分数要溯源：来自哪几道登舰测试回答、哪几次历史Mission反馈。
+
+3. 可控：AI所有建议均可以人工否决、人工修改；组舰算法输出只是建议，指挥官可以手动调整舰队人员。
+
+ 
+
+ 
+
+ 
+
+03 完整用户旅程 User Journey
+
+ 
+
+分为【新用户首次登舰全旅程】、【发起Mission‑组建舰队旅程】、【舰队舰桥执行Mission旅程】、【Mission结束‑回填航行档案旅程】、【老用户二次参与新Mission旅程】。
+
+同时包含路演Demo专用对照测试旅程（比赛演示核心）
+
+ 
+
+3.1 旅程1｜新用户首次登舰（舰员）
+
+ 
+
+mermaid  
+
+flowchart LR
+
+A[访问新大陆俱乐部首页<br>世界观叙事页] --> B[点击【申请登舰】]
+
+B --> C[注册/登录：手机号/邮箱/第三方登录Github]
+
+C --> D[系统分配唯一地球文明编号 NW‑XXXX]
+
+D --> E[进入登舰测试系统；展示测试世界观介绍]
+
+E --> F[完成N道开放式情景问答题<br>MVP：3‑5道；商业版可扩展题库]
+
+F --> G[提交答卷；调用大模型解析全部作答文本]
+
+G --> H[生成：8维能力向量、认知风格标签、初始化21席全席位得分、TOP3高亮席位]
+
+H --> I[生成【初始化航行护照Expedition Passport】]
+
+I --> J[进入个人中心，查看航行档案；可以把本人加入公共候选池（授权）]
+
+J --> K[结束；等待被组舰算法选中，或者自己发起Mission]
+
+ 
+
+ 
+
+关键业务规则：此时的航行档案为初始化状态，护城河尚未形成；真正壁垒来自后续Mission任务完成后的协作反馈回填，页面、AI解析结果、路演讲解都必须反复强调。
+
+ 
+
+3.2 旅程2｜舰队指挥官发起Mission、AI组舰
+
+ 
+
+mermaid  
+
+flowchart LR
+
+A[舰员升级为指挥官，发起新的Mission航行使命] --> B[填写Mission元数据：使命名称、目标描述、使命类型、周期、约束、需要覆盖的关键21席职能]
+
+B --> C[选择候选人员池：可以公共候选池 / 组织内部候选池（商业版）]
+
+C --> D[触发【AI组舰算法Fleet‑Formation】输入：Mission要求 + 全部候选者的私有航行档案]
+
+D --> E[算法输出推荐舰队方案：三大舱21席职能分配，人员匹配结果，给出匹配理由，标记风险：哪些关键席位空缺、哪些人员席位高度重叠]
+
+E --> F[指挥官查看推荐方案；支持人工增删替换舰员，手动调整席位分配；AI给出调整后的风险提示]
+
+F --> G[确认舰队；生成唯一舰队编号 NW‑F‑XXXX；所有被选中舰员收到通知]
+
+G --> H[跳转进入本舰队的【舰桥工作台】]
+
+ 
+
+ 
+
+3.3 旅程3｜舰桥工作台执行Mission完整闭环（提出‑指引‑拆解‑执行‑监督‑决策‑审核）
+
+ 
+
+mermaid  
+
+flowchart LR
+
+A[进入舰队舰桥工作台] --> B[左侧面板：21席三舱人员总览；点击可查看该舰员航行护照（授权范围内）]
+
+A --> C[中间面板：Mission Graph可视化闭环流程图，显示当前任务阶段]
+
+A --> D[右侧面板：舰载智能Ship Intelligence Agent集群]
+
+
+
+B & C & D --> E[人类舰员在对应席位，提交本阶段产出；例如【提出】阶段提交使命假设]
+
+E --> F[调用舰载智能Agent：研究Agent检索资料；拆解Agent生成任务树；风险Agent扫描风险点；审核Agent生成核验清单]
+
+F --> G[❗Agent输出全部是建议，所有关键节点出现【人类确认按钮】；人类可以全部接受、部分修改、全部驳回AI输出]
+
+G --> H[更新Mission Graph流转到下一阶段；记录全部人机交互航迹日志（Innovate Trace过程记录）]
+
+H --> I{Mission是否全部阶段完成?}
+
+I --否--> E
+
+I --是--> J[进入Mission收尾阶段]
+
+ 
+
+ 
+
+3.4 旅程4｜Mission收尾：协作反馈回填航行档案（护城河形成核心流程）
+
+ 
+
+mermaid  
+
+flowchart LR
+
+A[Mission全部阶段完成，到达收尾] --> B[舰队指挥官 + 各席位舰员，填写协作反馈表单；针对每一位舰员，填写：本Mission各席位实际表现、产出质量、风险事件、正向/负向反馈]
+
+B --> C[系统将反馈写入每一位舰员的私有航行档案数据库；更新该用户的21席各席位得分、8维能力向量（时序迭代，不是覆盖，保留历史版本）]
+
+C --> D[系统更新用户航行护照；增加一条Mission航行记录，授予星标；用户称号可以升级Explorer → Navigator → Pathfinder → World‑Builder]
+
+D --> E[生成本Mission完整航行报告，归档；Innovate Trace过程文档自动归档]
+
+E --> F[舰员可以带着更新后的航行档案，参与下一次Mission]
+
+ 
+
+ 
+
+⚠️业务规则：航行档案是时序版本化存储，不能覆盖历史记录；每一次回填产生新的版本快照，可以回溯历次变化；这是赛道“未定信号”个体差异的数据源根基。
+
+ 
+
+3.5 旅程5｜老用户再次参与Mission
+
+ 
+
+用户已经拥有经过1次/多次Mission回填后的航行档案；再次进入候选池；组舰算法读取已经迭代后的私有航行档案，输出和初始化完全不同的匹配结果；越多次航行，画像越贴近真实的协作行为。
+
+ 
+
+3.6 旅程6｜【路演Demo对照演示专用旅程｜mvp‑hackathon分支核心】
+
+ 
+
+该流程是比赛评委打分核心，系统必须专门支持“快速切换两套模拟脱敏航行档案”的演示模式，内置两套预置测试数据集： User‑Alpha 、 User‑Beta ，两套画像完全相反。
+
+ 
+
+1. 加载预置候选池，候选池包含 User‑Alpha（高探索，极低风险守护）；其余候选人员固定不变；Mission固定为「探索AI时代新型社区经济模型」
+
+2. 运行AI组舰算法；输出舰队结果，截图记录；Alpha分配至探索舱探索者席位；治理舱风险岗位由其他人补齐。
+
+3. 仅把候选池中的User‑Alpha替换为预置User‑Beta（高风险守护，低探索）；Mission不变、其余候选人员全部不变；重新运行组舰算法
+
+4. 观察输出：Beta被分配治理舱风险官、守门人席位；探索舱需要重新从剩余候选挑选人选；整套舰队席位分配发生实质改变。
+
+5. 演示完成：选择其中一支模拟舰队，进入舰桥工作台，演示舰载智能Agent；模拟Mission完成，执行反馈回填，展示同一个用户航行档案版本变化。
+
+ 
+
+系统开发要求：MVP需要做一个【演示模式开关】，一键切换预置数据集，减少路演现场操作失误。
+
+ 
+
+ 
+
+ 
+
+04 全局信息架构｜前台 / 业务中台 / 多角色管理后台
+
+ 
+
+分为三层：用户前台层、业务中台层、管理后台层；MVP分支仅实现前台层 + 极简超级管理后台；Commercial‑V1完整实现三层全部模块。
+
+ 
+
+4.1 前台层（面向舰员、舰队指挥官；PC/Web/H5/小程序/App全部复用这套业务模块）
+
+ 
+
+plaintext  
+
+【前台｜新大陆俱乐部 前台导航总结构】
+
+├── 00 首页｜世界观首页（未登录）
+
+│   ├── 世界观叙事、哥伦布故事、八大新大陆、21席简介、Demo入口、申请登舰按钮
+
+├── 01 身份认证模块
+
+│   ├── 注册、登录、忘记密码、第三方登录Github
+
+│   ├── 登舰入口（登录后可见）
+
+├── 02 登舰测试系统模块
+
+│   ├── 测试引导页、情景问答答题页、提交处理页
+
+│   ├── 测试结果报告页：8维雷达图、认知风格、21席得分TOP3、初始化航行护照预览
+
+├── 03 个人中心｜我的航行护照 Expedition Passport
+
+│   ├── 个人基础档案、地球文明编号、称号等级、星标统计
+
+│   ├── 8维能力雷达图、全部21席完整得分列表、认知风格标签
+
+│   ├── 历史Mission航行记录（每一次航行快照，支持查看历史版本）
+
+│   ├── APU Credit生产力凭证积分（MVP仅展示模拟数值）
+
+│   ├── 隐私设置：数据授权、哪些人可以查看我的航行档案哪些字段；个人数据导出
+
+├── 04 候选池管理模块
+
+│   ├── 我加入的候选池；浏览公共候选池；查看候选者脱敏航行档案（受权限控制）
+
+├── 05 Mission航行使命模块
+
+│   ├── 发起新Mission；我发起的Mission列表；我参与的Mission舰队列表
+
+│   ├── Mission详情总览页
+
+├── 06 AI组舰模块（指挥官权限）
+
+│   ├── 选择候选池、设置Mission约束；运行组舰算法；查看算法推荐舰队方案
+
+│   ├── 手动编辑舰队：增删人员，调整席位；AI风险提示；确认生成舰队
+
+├── 07 舰队舰桥工作台【核心业务页面】
+
+│   ├── 舰队总览、舰队编号、Mission目标、当前阶段
+
+│   ├── 左侧：21席三舱可视化面板，舰员列表，点击查看航行护照（权限控制）
+
+│   ├── 中部：Mission‑Graph任务闭环可视化流程图（提出‑指引‑拆解‑执行‑监督‑决策‑审核）
+
+│   ├── 右侧：舰载智能Ship Intelligence Agent集群面板，多Agent卡片；触发Agent任务，查看Agent输出，人类确认/驳回
+
+│   ├── 任务产出提交面板；协作沟通简易留言板（MVP简易；商业版实时聊天）
+
+│   ├── Mission收尾入口；协作反馈填写入口
+
+├── 08 航行报告模块
+
+│   ├── 归档Mission的完整航行报告；自动生成Innovate Trace航迹文档导出（比赛直接导出提交）
+
+├── 09 游戏化交互模块（Commercial‑V1；MVP仅样例演示）
+
+│   ├── NPC星舰领航员对话；TTS语音播报；交互动画；成就徽章；星标收集
+
+└── 10 帮助&文档中心
+
+    ├── 世界观说明、21席规则说明、隐私协议、用户协议、FAQ
+
+ 
+
+ 
+
+4.2 业务中台层（Commercial‑V1完整，MVP只做核心逻辑，不暴露管理界面；所有业务模块的底层能力）
+
+ 
+
+中台为前台、后台、多端提供统一能力服务，微服务拆分（MVP可以单体架构，预留拆分边界）
+
+ 
+
+plaintext  
+
+【业务中台｜能力服务】
+
+├── 用户身份权限中台服务
+
+│   ├── 账号服务、角色RBAC权限、数据权限（航行档案访问授权控制）、组织租户服务（商业）
+
+├── 登舰测试中台服务
+
+│   ├── 题库管理服务、答卷存储服务、AI文本解析调度服务
+
+├── 航行档案核心服务【产品护城河核心中台】
+
+│   ├── 航行护照CRUD、时序版本快照管理、21席分数迭代计算服务；私有数据访问鉴权
+
+├── Mission使命中台服务
+
+│   ├── Mission生命周期管理、Mission‑Graph状态流转引擎；航迹日志自动记录服务（Innovate Trace）
+
+├── AI组舰算法中台服务
+
+│   ├── 输入校验、候选池过滤、组舰优化计算；输出匹配解释依据；风险评估
+
+├── 舰载智能Ship‑Intelligence Agent中台服务
+
+│   ├── Agent编排调度；多Agent串联/并行执行；大模型调用封装；Prompt模板管理；人机交互日志记录；输出鉴权：强制人类确认拦截器
+
+├── APU生产力单元中台服务（商业V1，MVP仅模型）
+
+│   ├── APU Credit贡献积分计算、生产力单元档案管理、贡献证据存证
+
+├── 文件&报告中台服务
+
+│   ├── PDF导出、Innovate Trace航迹文档导出、海报素材导出、演示视频素材接口
+
+├── 消息通知中台（商业V1）
+
+│   ├── 站内信、邮件、小程序推送、App推送
+
+├── 多媒体语音中台（商业V1）
+
+│   ├── TTS语音合成、语音识别ASR、NPC对话会话管理
+
+└── 统计分析中台（商业V1）
+
+    ├── 平台航行数据统计、题库效果统计、组舰效果统计；脱敏聚合，禁止导出单用户原始私有数据
+
+ 
+
+ 
+
+4.3 多角色管理后台（Commercial‑V1完整；MVP仅极简Super‑Admin后台页面）
+
+ 
+
+全部后台管理系统独立域名 /admin；和前台业务系统做分离；严格RBAC权限隔离
+
+ 
+
+plaintext  
+
+【管理后台｜分为三大子后台】
+
+├── 子后台1：平台超级管理员后台 Super‑Admin
+
+│   ├── 系统配置：第三方大模型密钥、系统参数、演示模式开关、环境配置
+
+│   ├── 用户账号全局管理（仅账号状态；**禁止直接编辑用户航行档案业务数据**）
+
+│   ├── 预置Demo数据集管理（Alpha/Beta测试档案维护）
+
+│   ├── 系统日志查看、异常告警
+
+├── 子后台2：平台运营中台后台 Platform‑Operator【商业V1】
+
+│   ├── 登舰测试题库管理：增删改情景题，版本管理
+
+│   ├── Mission模板库管理；21席规则配置管理
+
+│   ├── 内容审核；用户申诉工单；公告管理
+
+│   ├── 脱敏平台统计看板；Innovate Trace全局统计
+
+└── 子后台3：组织租户管理后台 Org‑Admin【商业V1，多企业租户】
+
+    ├── 本组织舰员管理、组织内部候选池管理
+
+    ├── 组织内部Mission管理；组织数据隔离；组织统计看板
+
+ 
+
+ 
+
+ 
+
+ 
+
+05 八大业务系统完整需求规格
+
+ 
+
+完全沿用原始设计八大系统；区分MVP实现范围 / Commercial‑V1增强范围。
+
+ 
+
+System‑01：登舰测试系统
+
+ 
+
+定位：采集用户独有的开放式情景作答原始数据，作为初始化航行档案的输入源；注意：测试只是初始化，真正壁垒来自后续Mission回填。
+
+ 
+
+功能需求
+
+ 
+
+1. 测试引导页：世界观叙事，说明测试不是考试，没有对错，采集你的真实决策逻辑。
+
+2. 情景问答题库：开放式自由文本输入，不是选择题。
+
+- MVP内置固定3‑5道情景题；
+
+- Commercial‑V1支持后台题库管理，可增删题目，支持题目标签（探索类/风险决策类/冲突处理类）。
+
+3. 答题会话管理：中途退出可以续答；作答全部原始文本完整落库，原始作答属于用户私有数据资产。
+
+4. 提交之后，调用【AI能力解析模型】中台，解析全部回答，输出：8维能力分数0‑100、认知风格标签集合、21席初始化得分。
+
+5. 生成初始化航行护照快照；生成测试报告页面可视化雷达图。
+
+6. 隐私：用户可以选择是否把本次测试答卷用于后续系统迭代优化；默认为不授权。
+
+7. MVP内置演示模式：一键加载预置User‑Alpha / User‑Beta两套脱敏模拟答卷，直接生成两套航行档案，用于路演对照，不需要手动答题。
+
+ 
+
+MVP✅实现，Commercial‑V1增强
+
+ 
+
+- 增强：多轮动态情景测试；ASR语音作答（用户口述回答，语音转文字）；题库版本A/B测试。
+
+ 
+
+非功能
+
+ 
+
+- 原始答卷加密存储；访问必须鉴权。
+
+ 
+
+System‑02：AI能力模型系统（中台核心，见第07章节完整定义）
+
+ 
+
+定位：对用户文本作答、Mission协作反馈，做结构化解析；输出8维能力向量、认知风格、21席席位打分；提供可解释依据。
+
+包含Prompt模板库、向量计算、分数迭代更新逻辑、可解释溯源。
+
+ 
+
+System‑03：21席灵魂协作系统
+
+ 
+
+定位：定义21席三舱全部规则、席位权重、席位依赖关系、席位胜任度打分规则；21席是认知职能，不是职业岗位。
+
+ 
+
+核心业务规则完整定义
+
+ 
+
+三大舱，每舱7席，合计21席；完整席位定义：
+
+ 
+
+A舱｜探索舱 Discover（使命回答：我们应该去哪里？）
+
+ 
+
+1. 探索者 Explorer：发现未知问题、新现象、新可能性
+
+2. 发现者 Discoverer：搜集线索，识别潜在机会与信号
+
+3. 观察者 Observer：客观观察现象，记录事实，不带预设判断
+
+4. 研究者 Researcher：调研、查证资料，建立事实基础
+
+5. 想象者 Imaginator：发散想象，生成多种未来可能性
+
+6. 提案者 Proposer：把想法整理成可被讨论的正式提案
+
+7. 连接者 Connector：跨领域关联信息，建立人和想法之间的连接
+
+ 
+
+B舱｜建造舱 Build（使命回答：如何把想法变成可抵达的路线）
+
+ 
+
+1. 指引者 Director：对齐使命目标，确立原则与边界
+
+2. 战略师 Strategist：构建高层路径、全局策略
+
+3. 架构师 Architect：搭建系统架构、整体结构
+
+4. 拆解师 Decomposer：把大使命拆解为可执行任务单元
+
+5. 设计师 Designer：设计方案、产出形态与体验
+
+6. 工程师 Engineer：把方案转化为可运行产物
+
+7. 执行者 Executor：落地执行具体任务，交付产出物
+
+ 
+
+C舱｜治理舱 Govern（使命回答：确保抵达目的地时，仍然是我们想要成为的文明）
+
+ 
+
+1. 导航者 Navigator：监控航向，对照目标判断是否偏离
+
+2. 决策者 Decider：面对不确定性，做出关键取舍与最终选择
+
+3. 监督者 Supervisor：监控过程进度，识别偏差
+
+4. 风险官 Risk‑Officer：识别潜在风险，评估风险等级
+
+5. 审核者 Auditor：核验产出证据，检查交付物是否达标
+
+6. 仲裁者 Arbitrator：处理团队内部冲突、观点分歧
+
+7. 守门者 Gate‑Keeper：守住使命底线、价值原则，拦截偏离核心价值的方案
+
+ 
+
+21席系统业务规则
+
+ 
+
+1. 每一个舰员，对21个席位，都拥有0‑100的胜任度分数；分数来自两部分加权：
+
+- 权重30%：登舰测试初始化得分
+
+- 权重70%：历次真实Mission协作反馈回填迭代得分（护城河主要来源）
+
+ 
+
+重要：初始化测试只占30%权重；越多次航行，历史协作行为占比越高。
+
+2. 一个Mission舰队21席是职能全集，不等于强制21个真人；允许一个真人兼任多个席位。
+
+3. 硬约束（系统强制校验）：治理舱三个高风险席位【决策者、风险官、守门人】不能由舰载智能Agent承担，必须分配真人舰员；其余席位可以允许Agent临时补位，但是Agent补位会在系统标记【Agent临时补位风险】，组舰算法给出红色风险提示。
+
+4. 每一个Mission发起的时候，指挥官需要勾选：本Mission必须保证哪些席位必须真人；组舰算法把这个作为硬约束条件。
+
+5. 席位胜任分数必须支持可解释溯源：点开席位分数，可以看到：该分数来自哪几次登舰测试回答，哪几次Mission的协作反馈，每一条依据来源。（答辩评委重点关注“可解释AI”）
+
+ 
+
+MVP✅实现；Commercial‑V1增强
+
+ 
+
+- MVP：完整21席定义、分数加权计算、可解释溯源基础、硬约束校验；演示模式预置两套Alpha/Beta完整21席分数。
+
+- 商业增强：席位之间依赖关系图谱；跨席位协作冲突风险模型。
+
+ 
+
+System‑04：AI组舰算法 Fleet‑Formation系统
+
+ 
+
+定位：输入Mission需求约束 + 候选池全部人员的私有航行档案；输出最优舰队推荐方案；输出匹配依据、风险清单；支持人工调整。
+
+ 
+
+算法业务逻辑（MVP实现简化启发式算法，不做重型整数规划；商业V1可以升级运筹优化）
+
+ 
+
+输入参数
+
+ 
+
+1. Mission对象：Mission目标描述；必须真人的席位集合；Mission类型；任务周期；约束条件。
+
+2. 候选人员集合：每一个候选者完整航行档案：8维能力向量、全部21席胜任分数、认知风格标签、历史Mission履历。
+
+ 
+
+优化目标（最大化）
+
+ 
+
+1. 21席职能覆盖度：尽可能补齐全部21席；重点保障强制真人席位。
+
+2. 能力互补：降低舰队内部席位胜任度高度重叠；同一席位不要多个人高分冗余；不同席位之间补齐短板。
+
+3. 认知多样性：舰队认知风格标签多元化，避免全部是同一种思维模式。
+
+4. 历史协作正向记录：优先选择历史同类型Mission中反馈表现优秀的舰员。
+
+5. 人机平衡：尽可能减少Agent临时补位席位数量。
+
+ 
+
+约束条件（硬约束，不满足则输出告警，不生成方案）
+
+ 
+
+1. 所有标记【必须真人】的治理舱席位，必须分配真人，不能Agent补位。
+
+2. 同一个舰员，可以分配多个席位；但设置上限，单人最多兼任N席（MVP上限5席，可配置），防止一个人承担全部职能。
+
+ 
+
+输出结果
+
+ 
+
+1. 舰队推荐方案：舰队编号；每一个21席分配的舰员；标记哪些席位是真人、哪些是Agent临时补位。
+
+2. 匹配解释报告：为什么该人员被分配这个席位；溯源到该舰员航行档案中的哪一条证据（哪次测试、哪次Mission反馈）。
+
+3. 风险清单：哪些关键席位缺失、哪些人员兼任过多席位、哪些认知风格高度同质化、哪些席位由Agent临时补位。
+
+4. 给出多套备选方案（MVP输出1套主方案 + 1套备选；商业多套）。
+
+ 
+
+交互规则
+
+ 
+
+1. 算法输出全部是建议；指挥官可以自由增删人员，手动修改席位分配。
+
+2. 当指挥官手动修改之后，系统重新计算风险清单，高亮风险点，提示指挥官；但是不会阻止指挥官确认舰队（人拥有最终决策权）。
+
+3. ✨路演演示模式：支持一键替换候选池中的指定用户（Alpha↔Beta），其余输入完全不变，重新运行组舰算法，直接展示两套完全不同输出结果。
+
+ 
+
+MVP实现：启发式加权打分算法，满足Demo对照演示；不实现大规模整数规划。
+
+ 
+
+Commercial‑V1增强：大规模候选池运筹优化；多目标遗传算法；历史舰队效果的强化学习迭代。
+
+ 
+
+System‑05：舰队协作工作台系统（舰桥工作台，评委核心体验页面）
+
+ 
+
+定位：舰队执行Mission的统一协作空间；可视化21席、Mission‑Graph闭环、舰载智能入口、产出提交、过程航迹自动记录。
+
+ 
+
+页面组件需求
+
+ 
+
+1. 舰队基础信息卡片：舰队编号NW‑F‑XXXX，Mission目标描述，当前所处阶段，舰队创建时间。
+
+2. 左侧面板：21席三舱可视化面板。
+
+- 分为探索舱/建造舱/治理舱三个分组；每个席位卡片，显示分配舰员头像、名称；席位卡片区分真人/Agent补位（颜色标识）。
+
+- 点击舰员卡片：弹出航行护照弹窗，按照权限控制展示可查看字段；不允许越权查看用户私有原始答卷。
+
+3. 中间核心组件：Mission‑Graph可视化流程图。
+
+- 固定闭环节点顺序： 提出 → 指引 → 拆解 → 执行 → 监督 → 决策 → 审核 。
+
+- 可视化状态：未开始、进行中、待人类确认、已完成；节点之间连接线；点击节点展开该阶段产出物列表。
+
+- 流转规则：必须完成本阶段，产出提交；经过审核确认，才允许流转下一阶段；决策节点强制真人用户确认，AI不能自动流转。
+
+- 每一次状态变更，自动写入Innovate Trace航迹日志（记录谁，做了什么操作，输入输出，AI输入还是人类输入）。
+
+4. 右侧面板：舰载智能Ship‑Intelligence Agent集群面板。
+
+- Agent卡片列表，MVP内置4个核心Agent：研究Agent、拆解Agent、风险Agent、审核Agent。
+
+- 用户可以选中Agent，输入指令；Agent调用大模型，输出返回结果。
+
+- 强制拦截器：所有Agent输出，都会展示【人类确认 / 修改 / 驳回】按钮；Agent输出不会直接改变Mission‑Graph状态；必须人类操作，业务状态才会发生变化。
+
+- 每一次Agent调用，全部Prompt、输入、输出、人类的确认/修改/驳回操作完整记录到航迹日志。
+
+5. 产出物提交组件：每一个Mission阶段，可以提交文本、链接、附件；全部产出物归档到Mission航行报告。
+
+6. 简易协作留言区（MVP）；商业V1升级实时IM聊天。
+
+7. Mission收尾入口按钮；进入协作反馈填写表单。
+
+ 
+
+MVP✅完整实现；Commercial‑V1增强
+
+ 
+
+- 增强：多人实时协同编辑；文件在线预览；任务子任务拆解；消息推送；在线会议入口。
+
+ 
+
+System‑06：AI舰载智能 Ship Intelligence Agent Fleet系统
+
+ 
+
+定位：星舰的舰载AI集群；增强人类，不替代人类使命决策。
+
+ 
+
+Agent定义（MVP实现4个，商业扩展更多）
+
+ 
+
+1. Research‑Agent 研究Agent：针对给定主题检索、归纳信息，生成事实资料集合；不做价值判断。
+
+2. Decomposition‑Agent 拆解Agent：接收使命目标，生成结构化任务树，任务拆解清单；输出仅为建议。
+
+3. Risk‑Agent 风险Agent：扫描当前Mission产出，识别潜在风险点，输出风险清单、风险等级；仅告警，不做决策。
+
+4. Audit‑Agent 审核Agent：对照本Mission目标与原则，核验交付产出，给出核验意见与检查清单。
+
+ 
+
+Agent系统底层规则
+
+ 
+
+1. Agent的上下文输入，自动拉取：当前Mission目标、已经完成阶段全部产出、本舰队21席人员信息；减少用户重复复制粘贴上下文。
+
+2. 所有Agent调用全部落库日志：输入Prompt、模型返回原始输出、人类后续操作（接受/修改/驳回）；这一套日志就是Innovate Trace航迹核心数据源，比赛可以直接导出。
+
+3. 系统全局拦截器：任何Agent不能直接修改Mission状态，不能自动流转Mission‑Graph节点；所有业务变更必须真人触发确认。
+
+4. Agent不允许访问用户原始私有登舰答卷；Agent只能访问授权之后的航行档案结构化分数，无法拿到原始作答文本。
+
+ 
+
+MVP✅实现：4个Agent；上下文自动组装；强制人类确认拦截器；完整调用日志；魔搭/OpenAI兼容大模型调用。
+
+ 
+
+Commercial‑V1增强
+
+ 
+
+- 更多Agent：导航Agent、仲裁Agent、创意Agent；支持Agent之间互相调用、多Agent串行工作流；Agent记忆持久化；支持接入自定义Agent插件市场。
+
+- 增加NPC对话模式：以星舰领航员NPC角色对话交互，搭配TTS语音（System‑08多媒体）。
+
+ 
+
+System‑07：星际航行任务 Mission系统
+
+ 
+
+定位：完整管理Mission全生命周期：创建→组队→执行各阶段→收尾归档；自动生成航行报告与Innovate Trace航迹文档。
+
+ 
+
+Mission生命周期状态枚举
+
+ 
+
+ 草稿 → 待组建舰队 → 航行中（分7个子阶段：提出/指引/拆解/执行/监督/决策/审核） → 待收尾 → 已归档 
+
+ 
+
+核心功能
+
+ 
+
+1. Mission创建表单：名称、使命描述、使命目标、背景、必须真人保障的席位勾选、周期、标签；可以选择从Mission模板新建（商业版）。
+
+2. Mission阶段流转引擎：严格按照7步闭环；决策节点强制真人确认。
+
+3. 产出物归档：每一个阶段提交的产出，统一归档到Mission对象。
+
+4. Mission收尾流程：进入收尾之后，开启协作反馈表单填写窗口；全部反馈提交完成，系统批量回填每一位舰员航行档案，生成航行报告。
+
+5. 航行报告自动生成：Mission完整过程摘要、舰队人员列表、各阶段产出、全部Innovate Trace航迹记录；支持导出PDF，导出比赛要求的Innovate Trace文档格式。
+
+6. 归档：Mission归档之后，不允许修改业务数据；仅可读；保留全部历史快照。
+
+ 
+
+MVP✅完整实现；Commercial‑V1增强
+
+ 
+
+- Mission模板库；Mission复制；子Mission嵌套；里程碑；时间线日历视图。
+
+ 
+
+System‑08：协作信用 & 新经济系统（MVP仅数据模型骨架，不实现真实经济；商业V1完整迭代）
+
+ 
+
+⚠️黑客松MVP分支：只建数据库表、数据结构；页面只做展示模拟数值；不实现任何支付、融资、代币、链上逻辑；严禁任何金融业务。
+
+定位：基于航行档案、Mission协作贡献，构建AI生产力单元APU模型、APU Credit新大陆生产力凭证、人类生产力信用图谱。
+
+ 
+
+子模块
+
+ 
+
+1. 协作反馈模块：Mission收尾时，指挥官、舰员互相填写结构化反馈表单；反馈项对齐21席每一个席位表现；反馈分为正向证据、问题证据；必须填写事实依据，不允许只打分。
+
+2. 航行档案时序迭代计算服务：读取反馈表单，迭代更新用户21席胜任分数；版本快照保存，不覆盖历史。
+
+3. APU生产力单元档案模型：记录一个APU单元，由哪些舰员、哪些Agent、哪些任务产出组成；记录该单元完成过哪些Mission；产出证据集合。MVP仅建表，不做复杂业务。
+
+4. APU‑Credit生产力凭证积分模型：基于Mission中用户贡献证据，计算本地实验积分；MVP页面仅展示模拟数字；商业V1再设计完整贡献计算规则。
+
+5. 航行护照称号晋升规则：
+
+- Explorer探索者：完成初始化登舰测试
+
+- Navigator领航员：完成≥1次完整Mission
+
+- Pathfinder开拓者：完成≥10次完整Mission
+
+- World‑Builder世界建造者：完成≥50次完整Mission
+
+- Civilization‑Builder文明建造者：完成重大社会类Mission（商业）
+
+6. 贡献证据图谱Human‑Contribution‑Graph：把每一条APU Credit积分，溯源到对应的Mission、协作反馈、产出证据。每一个积分都有证据，不是空泛的分数。
+
+ 
+
+MVP实现边界
+
+ 
+
+✅数据表全部建好；反馈表单页面；航行档案时序快照；称号等级逻辑；APU Credit字段模拟展示。
+
+❌不实现积分交易、兑换、融资、支付；只作为业务实验字段。
+
+ 
+
+Commercial‑V1增强
+
+ 
+
+完整APU生产力单元管理；贡献证据体系；组织内贡献流转；对接外部评估体系（不做金融）。
+
+ 
+
+ 
+
+ 
+
+06 核心业务规则完整文档：21席、Mission闭环、组舰、航行档案时序
+
+ 
+
+本章节全部是业务规则，后端代码必须严格按照这里写的逻辑实现，不可以自由发挥。
+
+ 
+
+6.1 航行档案Expedition‑Passport时序版本规则（重中之重，赛道护城河）
+
+ 
+
+1. 用户每一次【初始化生成】、每一次【Mission完成反馈回填】，系统都会生成一份完整航行档案快照版本；版本号自增， passport_version_id 唯一主键。
+
+2. 永远不覆盖旧版本；全部历史快照永久归档，可以回溯查看该用户过去任意时间点的画像。
+
+3. 21席席位分数计算公式：
+
+ 
+
+ 席位最终得分 = 初始化登舰测试得分 × 0.3 + Σ（历次Mission该席位协作反馈得分 × 权重系数） ×0.7 
+
+单次Mission反馈权重系数：同一个用户，参与Mission越多，历史Mission的权重做时间衰减，最近Mission权重更高。
+
+ 
+
+4. 数据权限规则：
+
+- 用户本人：可以查看自己全部版本快照、原始登舰答卷、全部反馈记录。
+
+- 其他舰员：默认只能看到对方公开的：称号、星标数量、21席TOP3席位；默认看不到原始答卷、完整历史反馈、全部21席详细分数。
+
+- 用户可以在隐私设置，主动授权某个Mission舰队，可以查看自己航行档案的哪些字段。
+
+- 平台超级管理员：可以查看脱敏统计；业务原始私有数据，必须用户授权才可以访问，管理员禁止直接读取原始答卷。
+
+ 
+
+6.2 Mission七步闭环流转规则
+
+ 
+
+节点顺序固定： 提出 → 指引 → 拆解 → 执行 → 监督 → 决策 → 审核 
+
+ 
+
+1. 每一个节点完成条件：提交本阶段产出物；本阶段对应负责席位舰员确认完成。
+
+2. 【决策】节点强制约束：必须由分配到治理舱【决策者】真人舰员手动点击确认；舰载智能Agent输出只能作为参考，不能流转状态。
+
+3. 每个节点流转事件，自动写入Innovate Trace航迹日志；记录：操作人（人类/Agent）、输入内容、输出内容、时间戳；如果是Agent输出，记录人类对AI输出的操作：接受/修改（修改前后对比）/驳回。
+
+4. 流转不允许跳节点；必须顺序执行。
+
+ 
+
+6.3 组舰算法硬约束清单（后端代码校验，不满足给出风险告警）
+
+ 
+
+1. 治理舱席位： 决策者、风险官、守门人  强制真人，禁止Agent补位；如果候选池无法提供真人满足该席位，组舰算法输出红色致命风险，不允许确认舰队。
+
+2. 单人兼任席位上限：一个真人舰员，最多兼任5个21席；超过给出橙色风险告警；指挥官仍然可以手动确认（人拥有最终决策权）。
+
+3. Mission勾选的“必须真人保障席位”全部必须分配真人。
+
+ 
+
+6.4 对照演示模式业务规则（mvp‑hackathon专用）
+
+ 
+
+1. 系统后台预置两套完整脱敏模拟航行档案：User‑Alpha、User‑Beta；所有原始答卷、21席分数、8维向量全部预生成。
+
+2. 演示模式开关打开后：页面增加按钮【替换候选池成员：Alpha ↔ Beta】；其余Mission参数、其余候选池人员完全保持不变。
+
+3. 点击按钮，直接替换对应用户记录，调用组舰算法，即时刷新舰队输出结果；用来路演现场向评委展示：仅仅替换一份用户私有航行档案，系统输出实质变化，满足未定信号赛道演示硬性要求。
+
+4. 演示模式下，全部数据仅内存/测试库，不写入正式业务库；防止污染真实数据。
+
+ 
+
+6.5 数据脱敏规则
+
+ 
+
+1. 对外导出、展示航行档案，原始登舰测试答卷属于最高敏感私有数据；没有用户显式授权，绝对不对外展示。
+
+2. 航行护照对外公开视图，只显示：用户编号、称号、星标、TOP3席位得分；完整8维向量、完整21席分数、历史反馈记录，必须授权之后开放。
+
+ 
+
+ 
+
+ 
+
+07 AI能力模型完整定义｜大模型Prompt、解析逻辑、向量计算
+
+ 
+
+中台服务；输入：用户登舰测试开放式问答文本 / Mission协作反馈文本；输出结构化能力向量、认知风格标签、21席打分；输出附带可解释依据。
+
+支持兼容OpenAI接口、通义千问、魔搭模型（适配中客松魔搭创空间部署环境）。
+
+ 
+
+7.1 输入1：登舰测试多道情景问答原始文本
+
+ 
+
+用户多轮自由文本回答集合；数组形式传入大模型。
+
+ 
+
+7.1.1 系统Prompt模板（完整可复制，代码存入数据库prompt模板表，可版本管理）
+
+ 
+
+plaintext  
+
+# 角色：新大陆俱乐部登舰测试解析官
+
+## 世界观背景
+
+这是星际远航登舰测试，用户面对多道危机情景，给出自己的自由文本回答。
+
+你的任务：**不要评判回答的对错好坏；客观从用户的推理路径、风险偏好、决策模式、信息处理方式、协作倾向中提取结构化结果。**
+
+## 输出约束
+
+1. 严格输出JSON，禁止多余解释文字；JSON必须可以直接JSON.parse()解析。
+
+2. 输出包含如下字段：
+
+{
+
+  "eight_dim_score":{
+
+    "探索力":0‑100,
+
+    "想象力":0‑100,
+
+    "理解力":0‑100,
+
+    "拆解力":0‑100,
+
+    "执行力":0‑100,
+
+    "协作力":0‑100,
+
+    "决策力":0‑100,
+
+    "守护力":0‑100
+
+  },
+
+  "cognitive_style_tags":["标签1","标签2"],
+
+  "seat_init_score":{
+
+    "探索者":0‑100,
+
+    "发现者":0‑100,
+
+    "观察者":0‑100,
+
+    "研究者":0‑100,
+
+    "想象者":0‑100,
+
+    "提案者":0‑100,
+
+    "连接者":0‑100,
+
+    "指引者":0‑100,
+
+    "战略师":0‑100,
+
+    "架构师":0‑100,
+
+    "拆解师":0‑100,
+
+    "设计师":0‑100,
+
+    "工程师":0‑100,
+
+    "执行者":0‑100,
+
+    "导航者":0‑100,
+
+    "决策者":0‑100,
+
+    "监督者":0‑100,
+
+    "风险官":0‑100,
+
+    "审核者":0‑100,
+
+    "仲裁者":0‑100,
+
+    "守门人":0‑100
+
+  },
+
+  "explain_basis":[
+
+    {
+
+      "target_item":"字段名称",
+
+      "score":分数,
+
+      "basis_text":"从用户哪一段原始回答，提取到什么信号，支撑该分数"
+
+    }
+
+  ]
+
+}
+
+## 认知风格标签可选集合，只能从里面选，不能自创标签
+
+["发散型","收敛型","系统型","工程型","关系型","决策型","风险型","证据型"]
+
+
+
+## 重要规则
+
+1. eight_dim_score：8大维度分数0‑100。
+
+2. seat_init_score：21席每一席的初始化胜任分数0‑100。
+
+3. explain_basis是可解释依据，每一个关键分数，都要溯源引用用户原始回答片段；**用于前端页面展示“AI输出依据”，满足评委对可解释AI的评审点**。
+
+4. 不要编造用户回答内容，全部依据用户输入原文。
+
+5. 不要输出markdown，只输出纯JSON。
+
+
+
+## 用户输入：下面是用户全部登舰测试情景回答文本集合：
+
+{{user_answer_list}}
+
+ 
+
+ 
+
+7.1.2 后处理逻辑（后端代码，大模型返回JSON之后执行）
+
+ 
+
+1. JSON格式校验；解析失败，执行重试策略（最多重试2次）；重试失败返回解析异常，提示用户重新提交答卷。
+
+2. 对输出分数做边界校验，全部数值必须落在0‑100区间；超出则截断。
+
+3. 保存完整大模型原始返回报文到数据库（用于可追溯、问题排查）。
+
+4. 生成初始化航行档案版本快照；把 explain_basis 存入数据库，前端可视化展示依据。
+
+ 
+
+7.2 输入2：Mission协作反馈文本（回填迭代21席分数）
+
+ 
+
+Mission收尾，指挥官填写结构化协作反馈；AI解析反馈，生成增量分数变更；不是完全重写画像，是增量迭代。
+
+Prompt模板同样存入模板表；输出增量变更；后端按照权重公式，更新seat_score，生成新版本航行档案快照。
+
+ 
+
+7.3 舰载智能各个Agent独立Prompt模板库
+
+ 
+
+Research‑Agent、Decomposition‑Agent、Risk‑Agent、Audit‑Agent每一个Agent拥有独立系统Prompt；全部模板存入数据库，支持后台版本管理；MVP内置固定版本；商业运营后台可以编辑。
+
+ 
+
+7.4 大模型调用封装层（后端统一SDK）
+
+ 
+
+1. 统一适配：OpenAI兼容接口、魔搭ModelScope模型推理API（适配比赛魔搭创空间部署）。
+
+2. 配置文件读取模型密钥，不在业务代码硬编码。
+
+3. 调用限流、超时控制、重试、异常降级；记录每一次调用token消耗。
+
+4. 重要安全：Agent禁止读取用户原始登舰答卷，输入上下文只传入结构化分数，不传原始敏感文本。
+
+ 
+
+7.5 向量数据库（Commercial‑V1；MVP可以不用向量库，预留接口）
+
+ 
+
+商业版本，把用户作答、Mission产出做向量化，用于候选池语义检索；MVP为了48小时开发，不引入向量数据库，仅结构化字段；代码预留接入点。
+
+ 
+
+ 
+
+ 
+
+08 数据库完整设计
+
+ 
+
+数据库选型：MVP单体架构，使用PostgreSQL 16；关系型数据库；JSONB字段存储半结构化数据；所有敏感私有字段加密存储。
+
+商业版本：可以后续读写分离；分库分表预留字段；
+
+⚠️所有表必须包含： created_at 、 updated_at 、 deleted_at （软删除，禁止物理删除业务数据，航行档案、答卷属于重要资产）。
+
+主键统一：大部分业务表使用UUID作为主键；方便分布式后续扩展。
+
+ 
+
+8.1 核心数据表清单（全部字段详细定义）
+
+ 
+
+只列出核心业务表；基础用户账号表省略常规字段，重点写产品业务特有字段。
+
+ 
+
+表1： sys_user  用户账号主表
+
+ 
+
+字段名 类型 说明 
+
+user_id UUID PK 用户全局唯一ID 
+
+login_type varchar 手机号/邮箱/github第三方 
+
+phone/email/github_id varchar 登录凭证，部分字段可空 
+
+nickname varchar 舰员昵称 
+
+avatar_url varchar 头像 
+
+civilization_no varchar unique 地球文明编号 NW‑XXXX，系统生成唯一字符串 
+
+user_role varchar 枚举：member / fleet_commander / org_admin / platform_operator / super_admin；RBAC角色 
+
+privacy_setting JSONB 隐私配置：航行档案对外授权默认策略，哪些字段允许对外展示 
+
+is_deleted timestamp 软删除 
+
+created_at/updated_at timestamp 时间戳 
+
+ 
+
+表2： expedition_test_session  登舰测试会话表
+
+ 
+
+存储一次登舰测试的会话；用户可以多次参加登舰测试，每次生成独立session。
+
+|字段名|类型|说明|
+
+|---|---|---|
+
+|test_session_id|UUID PK|测试会话ID|
+
+|user_id|UUID FK → sys_user.user_id|所属用户|
+
+|session_status|varchar enum|草稿/已提交/解析完成/解析失败|
+
+|question_list|JSONB|本次测试全部题目集合|
+
+|user_answer_raw_list|JSONB encrypt|🔒加密存储用户每一道题原始自由文本回答；最高敏感私有数据|
+
+|llm_raw_response|JSONB|大模型解析返回完整原始JSON报文，用于追溯调试|
+
+|parse_error_msg|text|解析失败记录，可为null|
+
+|created_at/updated_at/deleted_at|timestamp| |
+
+ 
+
+表3： expedition_passport_snapshot  航行档案快照表【核心护城河表】
+
+ 
+
+⚠️每一次初始化、每一次Mission反馈回填，生成一条新快照；永远不update旧记录，只insert新快照；实现完整版本回溯。
+
+|字段名|类型|说明|
+
+|---|---|---|
+
+|passport_snapshot_id|UUID PK|快照唯一ID|
+
+|user_id|UUID FK → sys_user.user_id|归属舰员|
+
+|passport_version_no|int|版本号，自增；同一个user_id，版本号递增|
+
+|snapshot_source_type|varchar enum|快照来源： test_init 登舰测试初始化 /  mission_feedback Mission协作反馈回填|
+
+|source_relation_id|UUID|来源关联ID；test_init对应test_session_id；mission_feedback对应mission_id；可溯源|
+
+|eight_dim_score|JSONB|8维能力分数json对象|
+
+|cognitive_style_tags|text[]|认知风格标签数组|
+
+|seat_full_score|JSONB|完整21席全部席位分数json对象；{席位名称:0‑100}|
+
+|seat_explain_basis|JSONB|AI打分可解释依据集合，来自LLM输出explain_basis|
+
+|honor_title|varchar|称号枚举：Explorer / Navigator / Pathfinder / World‑Builder / Civilization‑Builder|
+
+|star_count|int|星标计数，完成Mission累加|
+
+|apu_credit_sim|decimal|✅MVP仅模拟APU‑Credit生产力凭证积分；商业V1正式计算；MVP不做金融逻辑|
+
+|snapshot_comment|text|快照备注，例如：“完成Mission NW‑M‑001之后迭代”|
+
+|created_at/updated_at/deleted_at|timestamp| |
+
+ 
+
+重要查询：查询用户当前最新航行档案快照： select * from expedition_passport_snapshot where user_id=? order by passport_version_no desc limit 1; 
+
+查询历史版本：根据passport_version_no筛选。
+
+ 
+
+表4：mission 航行使命主表
+
+ 
+
+字段名 类型 说明 
+
+mission_id UUID PK Mission全局ID；对外展示编号 NW‑M‑XXXX 
+
+mission_no varchar unique 对外可读编号NW‑M‑XXXX 
+
+mission_name varchar 使命名称 
+
+mission_background text 背景描述 
+
+mission_goal text 使命目标 
+
+mission_tags text[] 标签数组 
+
+must_human_seats text[] 必须真人保障的席位名称数组；组舰算法硬约束 
+
+mission_status varchar enum 草稿 / waiting_form Fleet / sailing / waiting_close / archived 
+
+current_phase varchar enum 七阶段：提出/指引/拆解/执行/监督/决策/审核；mission_status=sailing时有效 
+
+creator_user_id UUID FK Mission发起者，初始舰队指挥官 
+
+expect_start_time / expect_end_time timestamp 计划周期 
+
+final_archive_report_json JSONB null，归档之后存储完整航行报告文档 
+
+created_at/updated_at/deleted_at timestamp  
+
+ 
+
+表5：fleet 舰队表；一个Mission对应唯一一支舰队
+
+ 
+
+字段名 类型 说明 
+
+fleet_id UUID PK 舰队ID，对外编号 NW‑F‑XXXX 
+
+fleet_no varchar unique 可读编号 
+
+mission_id UUID FK → mission.mission_id 关联Mission 
+
+fleet_commander_user_id UUID FK 舰队指挥官user_id 
+
+fleet_status varchar enum 待确认 / 航行中 / 已归档 
+
+fleet_generation_log_json JSONB 组舰算法生成本次舰队的完整输出报告：匹配依据、风险清单、算法输入快照；路演对照演示核心证据，保存每一次组舰输入输出快照 
+
+created_at/updated_at/deleted_at timestamp  
+
+ 
+
+表6：fleet_seat_assignment 舰队‑21席人员分配表【核心】
+
+ 
+
+记录一支舰队里面，每一个21席席位分配给谁；可以是真人user_id，也可以是Agent占位。
+
+一条记录对应舰队的一个席位。
+
+|字段名|类型|说明|
+
+|---|---|---|
+
+|assignment_id|UUID PK|主键|
+
+|fleet_id|UUID FK → fleet.fleet_id|所属舰队|
+
+|seat_name|varchar|21席席位完整名称；例如“风险官”|
+
+|assign_type|enum| human 真人舰员 /  agent_temp Agent临时补位|
+
+|assigned_user_id|UUID FK → sys_user.user_id|null when assign_type=agent_temp；分配的真人舰员ID|
+
+|agent_alias|varchar|null；assign_type=agent_temp时，填写Agent名称，例如Risk‑Agent|
+
+|assign_comment|text|分配备注；算法生成或者指挥官手动修改备注|
+
+|created_at/updated_at/deleted_at|timestamp| |
+
+ 
+
+表7：mission_phase_output Mission每阶段产出物表
+
+ 
+
+字段名 类型 说明 
+
+output_id UUID PK 产出ID 
+
+mission_id UUID FK 归属Mission 
+
+phase_name varchar enum 7阶段节点名称 
+
+submit_user_id UUID FK 提交人user_id 
+
+output_title varchar 产出标题 
+
+output_content_text text 文本内容 
+
+attachments_json JSONB 附件链接数组 
+
+phase_status enum 草稿 / 待审核确认 / 已确认完成 
+
+confirm_user_id UUID 本阶段确认人；决策阶段必须是决策者席位真人 
+
+created_at/updated_at/deleted_at timestamp  
+
+ 
+
+表8：ship_intelligence_agent_call_log 舰载智能Agent调用日志表（Innovate Trace航迹核心数据源）
+
+ 
+
+每一次调用Agent，完整落库；比赛Innovate Trace文档可以直接从本表导出。
+
+|字段名|类型|说明|
+
+|---|---|---|
+
+|call_log_id|UUID PK|调用日志ID|
+
+|mission_id|UUID FK|null；归属Mission|
+
+|fleet_id|UUID FK|null；归属舰队|
+
+|agent_name|varchar|Agent名称：Research‑Agent / Decomposition‑Agent等|
+
+|call_trigger_user_id|UUID FK|触发调用的人类舰员|
+
+|agent_input_prompt|text|本次传给Agent的完整Prompt输入|
+
+|llm_model_name|varchar|使用的大模型名称|
+
+|llm_raw_output|text|大模型原始返回文本|
+
+|human_operation_type|enum| accept全部接受  /  modify修改  /  reject驳回 |
+
+|human_modify_content|text|null；当operation_type=modify时，记录人类修改之后的输出内容；记录人机协同过程，Innovate Trace重点|
+
+|token_consumed_input / token_consumed_output|int|token消耗统计|
+
+|call_cost_time_ms|int|耗时毫秒|
+
+|created_at/updated_at/deleted_at|timestamp| |
+
+ 
+
+表9：mission_collaborate_feedback Mission协作反馈表
+
+ 
+
+Mission收尾阶段填写的反馈；用于航行档案快照迭代。
+
+|字段名|类型|说明|
+
+|---|---|---|
+
+|feedback_id|UUID PK|反馈记录ID|
+
+|mission_id|UUID FK|归属Mission|
+
+|fleet_id|UUID FK|归属舰队|
+
+|feedback_from_user_id|UUID FK|填写反馈的人|
+
+|feedback_target_user_id|UUID FK|被评价的舰员|
+
+|seat_feedback_json|JSONB|针对各个席位的结构化反馈；每个席位包含：score 0‑100，evidence_text事实证据（必填），problem_note问题记录|
+
+|feedback_summary_text|text|反馈总述|
+
+|created_at/updated_at/deleted_at|timestamp| |
+
+ 
+
+表10：innovate_trace_export_log 航迹导出记录表
+
+ 
+
+记录每一次导出比赛Innovate Trace文档；导出内容快照存储JSONB；方便比赛提交。
+
+ 
+
+表11：demo_preset_snapshot 【mvp‑hackathon演示模式专用预置模拟航行档案表】
+
+ 
+
+存储预置User‑Alpha、User‑Beta两套脱敏模拟航行档案快照；用于路演一键切换对照演示。
+
+⚠️本表仅测试库存在；生产库可以禁用。
+
+ 
+
+表12：apu_credit_record APU生产力凭证积分流水表【MVP仅建表，不做真实经济】
+
+ 
+
+记录每一条APU‑Credit积分变更；溯源到对应的mission、feedback证据；每一笔积分都有证据链；MVP仅模拟写入测试数据。
+
+ 
+
+表13：rbac相关权限表（commercial‑v1；MVP简化，只简单角色字段，不做复杂多表RBAC）
+
+ 
+
+用户‑角色、角色‑权限、数据权限规则表；商业版本完整实现；MVP省略复杂RBAC，代码预留接口。
+
+ 
+
+表14：system_prompt_template 系统Prompt模板表
+
+ 
+
+存储全部大模型Prompt模板：登舰测试解析Prompt、各个Agent的系统Prompt；支持版本号；MVP内置固定版本；商业运营后台可以编辑模板。
+
+ 
+
+8.2 数据库安全强制要求
+
+ 
+
+1. 用户原始登舰答卷 user_answer_raw_list 字段必须字段级加密存储；数据库存储密文；应用层内存解密；数据库本身不能直接读取明文。
+
+2. 航行档案快照业务数据禁止物理删除，全部软删除 deleted_at ；
+
+3. 所有数据库访问，应用层必须做鉴权；不能仅仅依靠前端页面隐藏做权限控制；后端API每一次读取私有航行档案，必须校验用户访问授权。
+
+4. 禁止日志打印原始用户答卷明文；防止日志泄露私有数据。
+
+ 
+
+8.3 演示模式数据库隔离（mvp‑hackathon）
+
+ 
+
+演示模式所有操作写入独立 demo_schema 测试Schema；不污染正式业务数据表；路演结束可以一键清空demo_schema。
+
+ 
+
+ 
+
+ 
+
+09 多端产品设计：PC Web / H5自适应 / 安卓App / iOS App / 微信小程序
+
+ 
+
+两套代码策略；明确MVP分支、Commercial‑V1分支分别支持哪些端。
+
+ 
+
+9.1 技术选型清单
+
+ 
+
+1. Web PC + H5自适应：Vue3 + TypeScript + Element‑Plus；使用Tailwind‑CSS；一套代码，响应式布局；PC大屏完整舰桥工作台；H5移动端做布局适配，复杂舰桥工作台移动端做简化视图（移动端不建议完整操作复杂组舰，仅查看、简单交互）。✅mvp‑hackathon分支完整支持PC+H5，比赛Demo就是Web网页。
+
+2. 微信小程序：Commercial‑V1；使用uni‑app，一套代码产出小程序、安卓App、iOS App。
+
+3. 安卓App / iOS App：Commercial‑V1，uni‑app编译产出；原生能力调用：TTS语音、ASR语音识别、推送通知；MVP不做原生App。
+
+ 
+
+重要：业务API全部统一一套RESTful后端接口；Web、小程序、App全部调用同一套后端服务；前端仅仅是UI层差异；业务逻辑全部收敛后端，避免多端业务逻辑不一致。
+
+ 
+
+9.2 各端功能范围矩阵
+
+ 
+
+功能模块 PC‑Web（MVP✅） H5自适应（MVP✅） 微信小程序（Commercial） 安卓App（Commercial） iOS App（Commercial） 
+
+首页世界观、申请登舰 ✅完整 ✅自适应 ✅完整 ✅完整 ✅完整 
+
+登舰测试答题 ✅完整 ✅完整，优化手机输入 ✅完整 ✅完整，支持ASR语音作答 ✅完整，支持ASR 
+
+个人航行护照查看 ✅完整 ✅简化雷达图展示 ✅简化版 ✅完整 ✅完整 
+
+候选池浏览 ✅完整 ✅简化列表 ✅简化 ✅完整 ✅完整 
+
+AI组舰算法、舰队配置 ✅完整（评委主要操作页面） ⚠️H5仅查看，不允许移动端执行复杂组舰编辑，提示跳转PC ❌小程序不开放复杂组舰编辑，仅查看 ✅完整 ✅完整 
+
+舰桥工作台Mission Graph可视化 ✅完整核心业务页面 ⚠️H5仅查看任务状态、提交简单产出；复杂21席面板建议PC操作 仅查看任务进度，不做复杂操作 ✅完整 ✅完整 
+
+舰载智能Agent调用 ✅完整 ✅基础调用；复杂Agent建议PC 基础调用 ✅完整+TTS语音NPC对话 ✅完整+TTS 
+
+Mission收尾、协作反馈填写 ✅完整 ✅自适应表单 ✅表单填写 ✅完整 ✅完整 
+
+航行报告、Innovate Trace导出PDF ✅完整导出 H5支持预览，导出PDF建议PC 预览，不导出PDF 预览，导出PDF 预览，导出PDF 
+
+游戏化NPC‑TTS语音交互 ✅Commercial；MVP仅样例演示1段TTS ✅Commercial；MVP样例 ✅Commercial ✅Commercial完整NPC对话+TTS+ASR ✅Commercial完整NPC对话+TTS+ASR 
+
+管理后台页面（Super‑Admin/运营后台） ✅仅PC访问；移动端禁止访问后台 ❌H5禁止访问后台；后台只能PC浏览器 ❌小程序禁止访问后台 ❌App不提供后台入口 ❌App不提供后台入口 
+
+ 
+
+设计原则：复杂核心业务操作（组舰算法配置、完整舰桥工作台）优先保证PC端完整；移动端、小程序以查看、简单填表为主；复杂操作提示用户跳转PC网页。
+
+ 
+
+9.3 UI视觉风格规范（直接交付UI/前端）
+
+ 
+
+产品整体：星际科幻+极简未来主义；深色主基调；深蓝色、深空黑、星银白作为主色；科技淡蓝、星云紫作为强调色；不要过度花哨，保证黑客松Demo页面清晰可读；叙事页面氛围感强，业务工作台页面清晰克制。
+
+ 
+
+- 舰桥工作台页面：模拟星舰舰桥控制台UI；Mission‑Graph流程图采用星舰航行路径的可视化隐喻。
+
+- 航行护照页面：宇宙航行护照卡片UI；雷达图可视化8维能力。
+
+- 21席三舱面板：三个舱视觉分区；探索舱（淡蓝色星云）、建造舱（金属银灰）、治理舱（深紫星光）；真人席位卡片与Agent临时补位卡片使用不同颜色边框区分。
+
+- 演示模式：页面顶部有一条醒目的半透明提示条： 【演示模式｜预置模拟脱敏航行档案，仅用于路演对照，非真实业务数据】 ，防止评委混淆演示数据和真实用户数据。
+
+ 
+
+ 
+
+ 
+
+（接续上文 PRD 文档，承接10.1章节）
+
+ 
+
+10 游戏化界面交互 & NPC语音TTS、ASR对话系统
+
+ 
+
+⚠️MVP‑hackathon分支：不做完整NPC对话系统；只做1个TTS样例Demo：首页星舰领航员NPC简短语音播报世界观文案，作为能力样例；不做完整会话对话；完整NPC对话、多轮交互、ASR语音输入全部放在Commercial‑V1分支。
+
+ 
+
+10.1 Commercial‑V1完整游戏化交互需求
+
+ 
+
+1. NPC角色：星舰领航员Navigator‑NPC；产品世界观的虚拟星舰领航员。
+
+2. 交互入口：
+
+- 全局悬浮NPC头像按钮，任何页面均可唤起对话面板；
+
+- 首次登录登舰流程，NPC主动弹窗引导用户完成登舰测试；
+
+- 舰桥工作台右侧，可切换「Agent集群面板 / NPC领航员对话面板」。
+
+3. NPC能力清单：
+
+1）世界观科普：讲解21席、三舱、Mission闭环、航行护照规则；
+
+2）流程引导：新用户一步步指引完成申请登舰→答题→查看航行护照；
+
+3）状态播报：Mission阶段变更、舰队组建完成、收到新的Mission通知，NPC语音+文字双播报；
+
+4）辅助调用舰载智能Agent：自然语言对话，由NPC调度后端各个Agent集群；用户不需要手动点选Agent卡片，直接对话下达指令；
+
+5）成就播报：用户升级称号、获得星标，NPC触发祝贺语音动画；
+
+4. 多媒体能力
+
+- TTS文本转语音：支持多种音色；领航员固定使用沉稳星际领航音色；
+
+- ASR语音识别：用户可以直接语音说话，转成文本输入对话；登舰测试支持口述作答；
+
+- 动画：NPC头像微动画（眨眼、点头），对话气泡，星舰粒子特效；
+
+5. 业务硬约束：
+
+ 
+
+NPC只是人机交互外壳；底层依旧调用原有Agent中台；NPC绝不可以绕过“人类确认拦截器”，所有Agent生成的业务建议，仍然需要真人点击确认，才会改变Mission业务状态。NPC只做表达层，不拥有业务决策权。
+
+ 
+
+10.2 MVP‑hackathon TTS最小样例实现范围
+
+ 
+
+1. 仅首页世界观页面；增加领航员NPC悬浮头像；点击头像，调用TTS接口朗读一段Slogan文案；
+
+2. 不做多轮对话、不做ASR；没有对话会话记忆；仅单向文本转语音播放；
+
+3. 代码预留接口，Commercial‑V1直接在此基础上扩展完整NPC会话。
+
+ 
+
+10.3 开源组件选型（GitHub地址、安装命令、配置要点）
+
+ 
+
+区分前端浏览器TTS、服务端TTS；浏览器内置Web Speech API不需要后端服务，MVP优先使用，减少部署复杂度。
+
+ 
+
+组件1：浏览器原生 Web Speech API（MVP优先，无需安装依赖）
+
+ 
+
+- Github：浏览器Web标准，无仓库地址；浏览器原生支持Chrome/Edge/Safari；
+
+- 适用：MVP首页NPC样例TTS；不需要后端、不需要付费API，魔搭创空间环境可以直接运行
+
+- 限制：部分移动端浏览器音色有限；不支持自定义高级音色；仅前端浏览器本地合成。
+
+- 前端示例调用代码片段，直接交给AtomCode：
+
+ 
+
+javascript  
+
+// 星舰领航员TTS播报样例
+
+function starNavigatorSpeak(text) {
+
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  utterance.lang = "zh‑CN";
+
+  utterance.rate = 0.92;
+
+  utterance.pitch = 1.0;
+
+  speechSynthesis.speak(utterance);
+
+}
+
+// 触发播报文案
+
+starNavigatorSpeak("欢迎来到新大陆俱乐部，人类的星际远航即将启程。");
+
+ 
+
+ 
+
+组件2：商业版本服务端TTS‑ASR 开源备选（Commercial‑V1）
+
+ 
+
+备选A：FunASR 阿里开源语音工具库（ASR语音识别 + TTS）
+
+ 
+
+- GitHub地址： https://github.com/alibaba‑damo‑academy/FunASR 
+
+- 安装命令
+
+ 
+
+bash  
+
+pip install funasr
+
+ 
+
+ 
+
+- 用途：服务端部署，实现高质量中文语音识别、语音合成；用于App/小程序端上传音频，服务端转文字；
+
+- 注意：mvp‑hackathon不要引入，增加部署负担；仅商业版本使用。
+
+ 
+
+备选B：web‑tts‑player 前端网页语音播放增强封装
+
+ 
+
+- GitHub： https://github.com/jimmywarting/web‑speech‑capture 
+
+- 安装： npm install web‑speech‑capture 
+
+- 用途：封装浏览器Web Speech，兼容异常、播放队列；Commercial‑V1网页端NPC对话使用。
+
+ 
+
+10.4 游戏化成就&徽章系统（Commercial‑V1，MVP仅静态展示UI，不做完整逻辑）
+
+ 
+
+1. 徽章集合：
+
+- 登舰者徽章：完成初始化登舰测试
+
+- 启航星标：完成第1次Mission
+
+- 探索者勋章：作为探索舱席位完成Mission
+
+- 守护者勋章：作为治理舱风险官/守门人完成Mission
+
+2. 展示位置：航行护照页面，卡片式陈列；
+
+3. MVP：页面写死静态徽章UI，仅做视觉展示；业务逻辑、徽章发放全部不实现，留给商业版本迭代。
+
+ 
+
+ 
+
+ 
+
+11 开源第三方组件完整清单｜GitHub地址、安装命令、配置要点
+
+ 
+
+🎯给AtomCode的开发指引：
+
+ 
+
+1.  mvp‑hackathon 分支：优先选择零部署、前端浏览器原生、npm轻量包、魔搭创空间环境兼容的组件；尽量避开需要额外docker服务、模型本地部署的重型开源项目，保障48小时可以跑通Demo。
+
+2.  commercial‑v1 分支：可以引入重型开源服务，用于后续迭代。
+
+3. 所有组件版本号固定写死，不要使用^自动升版本，避免依赖突变引发线上bug。
+
+ 
+
+11.1 前端 Web（Vue3 + TS + Element‑Plus + TailwindCSS，MVP&Commercial共用）
+
+ 
+
+组件名称 Github地址 安装命令 用途 MVP是否启用 
+
+Vue3 https://github.com/vuejs/vue  npm install vue@3.4.38  前端主框架 ✅ 
+
+Element‑Plus https://github.com/element‑plus/element‑plus  npm install element‑plus@2.8.8  UI组件库：表单、弹窗、卡片、表格 ✅ 
+
+TailwindCSS https://github.com/tailwindlabs/tailwindcss  npm install -D tailwindcss@3.4.17 postcss autoprefixer  样式、响应式H5/PC自适应布局 ✅ 
+
+ECharts｜雷达图、流程图可视化 https://github.com/apache/echarts  npm install echarts@5.5.1  8维能力雷达图、Mission‑Graph任务流程图可视化、21席舱位可视化 ✅核心，Demo强依赖 
+
+mermaid‑js｜任务流程渲染备选 https://github.com/mermaid‑js/mermaid  npm install mermaid@10.9.1  Mission‑Graph备选渲染方案；ECharts优先，mermaid做降级方案 ✅ 
+
+Pinia https://github.com/vuejs/pinia  npm install pinia@2.2.2  前端状态管理 ✅ 
+
+Vue‑Router https://github.com/vuejs/router  npm install vue‑router@4.4.5  页面路由 ✅ 
+
+js‑pdf + html2canvas https://github.com/parallax/jsPDF https://github.com/niklasvh/html2canvas  npm install jspdf@2.5.2 html2canvas@2.0.0  前端导出PDF：航行报告、Innovate Trace航迹文档导出 ✅比赛提交导出功能必须 
+
+dayjs https://github.com/iamkun/dayjs  npm install dayjs@1.11.13  时间格式化处理 ✅ 
+
+lodash‑es https://github.com/lodash/lodash  npm install lodash‑es@4.17.21  通用工具函数、数组对象处理 ✅ 
+
+xlsx https://github.com/SheetJS/sheetjs  npm install xlsx@0.18.5  导出Excel备选，航迹数据导出 ✅可选 
+
+ 
+
+前端额外：Web Speech API（浏览器原生TTS，无npm包），MVP首页NPC语音样例。
+
+ 
+
+11.2 后端技术栈（MVP采用单体后端：Python FastAPI，魔搭创空间完美适配）
+
+ 
+
+选型理由：魔搭创空间原生支持Python环境；FastAPI开发速度快；对接大模型API简单；48小时黑客松开发效率最高；Commercial‑V1后续可以拆微服务。
+
+后端主框架 FastAPI
+
+ 
+
+组件名称 Github地址 安装命令 用途 MVP是否启用 
+
+FastAPI https://github.com/fastapi/fastapi  pip install fastapi==0.112.2 uvicorn[standard]==0.30.6  后端API服务主框架 ✅ 
+
+Pydantic v2 https://github.com/pydantic/pydantic  pip install pydantic==2.8.2  数据模型校验，请求/响应结构体 ✅ 
+
+SQLAlchemy 2.0 ORM https://github.com/sqlalchemy/sqlalchemy  pip install sqlalchemy==2.0.32 psycopg2‑binary==2.9.9  PostgreSQL数据库ORM操作 ✅ 
+
+alembic https://github.com/sqlalchemy/alembic  pip install alembic==1.13.2  数据库版本迁移工具，数据表变更管理 ✅ 
+
+python‑jose + passlib[bcrypt] https://github.com/mpdavis/python‑jose https://github.com/lyndir/passlib  pip install python‑jose==3.3.0 passlib[bcrypt]==1.7.4 python‑multipart==0.0.9  JWT登录鉴权、密码哈希加密 ✅ 
+
+python‑dotenv https://github.com/theskumar/python‑dotenv  pip install python‑dotenv==1.0.1  读取.env环境变量，密钥、模型API密钥配置，禁止硬编码密钥 ✅强制 
+
+openai‑python SDK https://github.com/openai/openai‑python  pip install openai==1.52.0  统一兼容OpenAI格式接口；魔搭ModelScope推理接口兼容OpenAI协议，可以直接复用本SDK，无需重写客户端 ✅核心AI调用组件 
+
+pydantic‑settings https://github.com/pydantic/pydantic‑settings  pip install pydantic‑settings==2.6.1  环境配置管理 ✅ 
+
+cryptography｜字段加密 https://github.com/pyca/cryptography  pip install cryptography==43.0.1  数据库敏感字段加密，用户原始答卷加密存储 ✅隐私合规强制 
+
+loguru https://github.com/Delgan/loguru  pip install loguru==0.7.2  结构化日志记录，Agent调用日志、系统异常日志 ✅ 
+
+ 
+
+⚠️MVP不要引入：Redis、RabbitMQ、ElasticSearch、向量数据库（Chroma/Pinecone）、Celery任务队列。全部放到commercial‑v1。
+
+理由：增加部署复杂度；黑客松Demo不需要高并发；同步调用大模型即可满足演示；商业版本再引入异步任务队列。
+
+ 
+
+11.3 Commercial‑V1 后端新增重型开源组件（赛后迭代，mvp分支不安装）
+
+ 
+
+组件名称 Github地址 安装部署说明 用途 
+
+Chroma 向量数据库 https://github.com/chroma‑core/chroma  pip install chromadb  向量存储；用户作答、Mission产出语义检索；候选池语义匹配 
+
+Redis https://github.com/redis/redis docker部署 缓存、会话、消息队列、限流 
+
+Celery https://github.com/celery/celery pip安装+redis broker 异步任务：长文本解析、PDF文档解析、批量报告生成 
+
+FunASR https://github.com/alibaba‑damo‑academy/FunASR pip安装，可本地模型部署 ASR语音识别、服务端高质量TTS 
+
+MinIO对象存储 https://github.com/minio/minio docker容器部署 文件、附件、图片、报告文件存储；替代本地文件存储 
+
+Casbin｜RBAC权限中台 https://github.com/casbin/casbin  pip install casbin  复杂RBAC权限，多租户组织权限控制 
+
+ 
+
+11.4 跨端uni‑app框架（Commercial‑V1，小程序、安卓、iOS）
+
+ 
+
+- 仓库： https://github.com/dcloudio/uni‑app 
+
+- 安装：使用HBuilderX IDE；或者vue‑cli命令行创建uni‑app项目；
+
+- 说明：mvp‑hackathon不使用uni‑app；MVP只维护Web PC+H5；商业版本复用Web端业务逻辑，迁移到uni‑app做三端打包。
+
+ 
+
+11.5 DevOps & 开发辅助工具
+
+ 
+
+1）Ruff Python代码格式化&静态检查
+
+ 
+
+- Github： https://github.com/astral‑sh/ruff 
+
+- 安装： pip install ruff==0.6.4 
+
+- 用途：统一后端Python代码风格，代码静态检查；AtomCode自动运行。
+
+ 
+
+2）Pre‑commit hooks
+
+ 
+
+- Github： https://github.com/pre‑commit/pre‑commit 
+
+-  pip install pre‑commit==3.8.0 
+
+- 用途：git提交前自动跑ruff、格式检查；防止脏代码提交仓库。
+
+ 
+
+3）Docker & Docker‑Compose 开发环境（MVP可选，商业版本必备）
+
+ 
+
+docker-compose.yml 需要定义：PostgreSQL数据库、FastAPI后端服务；
+
+👉mvp‑hackathon可以直接在魔搭创空间容器直接运行Python，不需要完整docker；commercial‑v1必须提供完整docker compose一键启动开发环境。
+
+ 
+
+11.6 项目目录结构完整定义（直接交给AtomCode，代码文件夹严格遵守）
+
+ 
+
+区分仓库根目录； mvp‑hackathon 分支与 commercial‑v1 分支目录结构保持兼容；商业版本新增文件夹，不改动MVP已有文件路径。
+
+ 
+
+plaintext  
+
+new‑world‑club/
+
+├── docs/                          # 全部文档存放，本PRD、架构图、数据库ER图、海报文案、路演脚本
+
+│   ├── prd/                       # PRD文档
+
+│   ├── poster/                    # 海报文案素材
+
+│   ├── demo‑script/               # 路演演示脚本、评委问答预案
+
+│   └── trace‑template/            # Innovate Trace航迹导出模板（比赛提交）
+
+├── backend/                       # FastAPI后端项目
+
+│   ├── app/
+
+│   │   ├── main.py                # 服务入口
+
+│   │   ├── config/                # 配置读取、环境变量、模型密钥配置
+
+│   │   ├── api/                   # API路由层，拆分模块auth、test、passport、mission、fleet、agent、admin
+
+│   │   ├── core/                  # 核心中台服务层：llm_parser（AI解析中台）、fleet_algorithm（组舰算法）、ship_intelligence（舰载智能）、passport_service（航行档案快照服务）
+
+│   │   ├── db/
+
+│   │   │   ├── models/            # SQLAlchemy全部数据表模型
+
+│   │   │   └── session.py         # 数据库会话
+
+│   │   ├── schemas/               # Pydantic 请求响应结构体
+
+│   │   ├── services/              # 业务服务层
+
+│   │   ├── utils/                 # 工具函数：加密、鉴权、日志、时间处理
+
+│   │   └── demo_mode/             # 【mvp‑hackathon专用】演示模式预置Alpha/Beta数据集、demo schema隔离逻辑
+
+│   ├── alembic/                   # 数据库迁移脚本
+
+│   ├── .env.example               # 环境变量样例，密钥占位；真实.env加入.gitignore禁止提交git
+
+│   ├── requirements.txt           # python依赖固定版本
+
+│   └── Dockerfile
+
+├── frontend‑web/                   # Vue3 PC+H5前端Web项目（MVP主项目）
+
+│   ├── public/
+
+│   ├── src/
+
+│   │   ├── main.ts
+
+│   │   ├── router/
+
+│   │   ├── store/                 # Pinia状态管理
+
+│   │   ├── views/                 # 页面视图，严格对齐信息架构
+
+│   │   │   ├── home/              # 首页世界观、NPC TTS样例
+
+│   │   │   ├── auth/              # 登录注册
+
+│   │   │   ├── expedition‑test/   # 登舰测试全部页面
+
+│   │   │   ├── passport/          # 航行护照、个人中心
+
+│   │   │   ├── candidate‑pool/    # 候选池页面
+
+│   │   │   ├── mission/           # Mission创建、列表
+
+│   │   │   ├── fleet‑formation/   # AI组舰页面【路演核心对照演示页面】
+
+│   │   │   ├── bridge‑deck/       # 舰桥工作台核心页面（Mission‑Graph、21席面板、Agent集群）
+
+│   │   │   ├── report/            # 航行报告、PDF导出
+
+│   │   │   └── admin‑simple/      # MVP极简超级管理员后台页面
+
+│   │   ├── components/             # 全局公共组件：21席舱卡片、radar雷达图组件、mission‑graph流程图组件、npc悬浮组件
+
+│   │   ├── api/                    # 前端后端请求接口封装
+
+│   │   ├── utils/                  # 工具，包含web‑speech‑tts.ts（MVP的TTS样例）
+
+│   │   └── assets/                 # 静态资源：星际背景图、图标、配色主题
+
+│   ├── package.json
+
+│   ├── tailwind.config.js
+
+│   └── Dockerfile
+
+├── frontend‑uni‑app/               # 【commercial‑v1】uni‑app项目（小程序、安卓、iOS），MVP分支该文件夹为空
+
+├── deploy/
+
+│   ├── docker‑compose‑dev.yml     # 开发环境docker编排（commercial‑v1）
+
+│   └── modelscope‑deploy.md        # 魔搭创空间部署说明文档（比赛MVP部署必读）
+
+├── scripts/                        # 辅助脚本：初始化预置demo数据集脚本、数据库初始化脚本、导出Innovate Trace脚本
+
+├── .gitignore
+
+├── README.md                       # 项目总README；包含两个分支说明；本地启动步骤；魔搭部署步骤；第三方组件清单
+
+└── LICENSE
+
+ 
+
+ 
+
+✅给AtomCode重要指令：
+
+ 
+
+1. 业务逻辑全部收敛在backend/app/core / backend/app/services；禁止把核心业务规则（21席分数公式、组舰算法硬约束、航行档案快照版本规则、人类确认拦截器）写在前端；前端只负责展示与交互。
+
+2. 所有大模型调用、解析、组舰计算全部后端执行；前端仅传递参数接收结果。
+
+3. demo_mode文件夹全部逻辑仅在mvp‑hackathon分支启用；commercial‑v1保留，但增加开关，生产环境强制关闭演示模式。
+
+ 
+
+ 
+
+ 
+
+12 接口概要设计（RESTful API，关键核心接口清单）
+
+ 
+
+完整OpenAPI文档由FastAPI自动生成，访问 /docs 即可查看；下面列出业务核心接口，便于前后端对齐开发。
+
+鉴权规则：绝大多数接口请求头携带 Authorization: Bearer {jwt_token} ；公开首页、注册登录接口无需token。
+
+ 
+
+12.1 鉴权模块  /api/v1/auth 
+
+ 
+
+1.  POST /api/v1/auth/register  用户注册，生成地球文明编号 civilization_no 
+
+2.  POST /api/v1/auth/login  登录获取JWT Token
+
+3.  GET /api/v1/auth/me  获取当前登录用户基础信息
+
+ 
+
+12.2 登舰测试系统  /api/v1/expedition‑test 
+
+ 
+
+1.  GET /api/v1/expedition‑test/question‑list  获取测试情景题目列表（MVP固定3‑5道）
+
+2.  POST /api/v1/expedition‑test/session/create  创建测试会话test_session_id
+
+3.  PUT /api/v1/expedition‑test/session/{session_id}/submit‑answers  提交用户全部原始作答文本
+
+4.  POST /api/v1/expedition‑test/session/{session_id}/parse  触发后端调用LLM解析答卷，生成初始化航行档案快照
+
+5.  GET /api/v1/expedition‑test/session/{session_id}/report  获取解析完成测试报告（8维向量、认知标签、初始化21席得分）
+
+6.  【演示模式专用】POST /api/v1/expedition‑test/demo/preset‑alpha  一键载入预置User‑Alpha模拟答卷生成快照
+
+7.  【演示模式专用】POST /api/v1/expedition‑test/demo/preset‑beta  一键载入预置User‑Beta模拟答卷生成快照
+
+ 
+
+12.3 航行护照（航行档案快照）  /api/v1/passport 
+
+ 
+
+1.  GET /api/v1/passport/latest  获取当前用户最新版本航行档案快照
+
+2.  GET /api/v1/passport/history‑versions  获取该用户全部历史快照版本列表（版本回溯）
+
+3.  GET /api/v1/passport/snapshot/{snapshot_id}  根据快照ID获取某一版完整档案
+
+4.  POST /api/v1/passport/export‑my‑all‑data  用户导出自己全部私有数据（隐私合规）
+
+5.  PATCH /api/v1/passport/privacy‑setting  更新隐私授权配置
+
+ 
+
+12.4 候选池  /api/v1/candidate‑pool 
+
+ 
+
+1.  GET /api/v1/candidate‑pool/list  获取候选池人员列表（返回脱敏航行护照摘要：称号、星标、TOP3席位；完整分数需要授权才返回）
+
+2.  POST /api/v1/candidate‑pool/add‑me  将本人加入公共候选池
+
+ 
+
+12.5 Mission航行使命  /api/v1/mission 
+
+ 
+
+1.  POST /api/v1/mission/create  创建新Mission
+
+2.  GET /api/v1/mission/my‑list  我发起的/我参与的Mission列表
+
+3.  GET /api/v1/mission/{mission_id}/detail  Mission详情
+
+4.  PATCH /api/v1/mission/{mission_id}/update‑status  更新Mission状态（受后端状态机校验，不能随意跳转阶段）
+
+5.  POST /api/v1/mission/{mission_id}/close‑prepare  Mission进入收尾，开启协作反馈表单
+
+ 
+
+12.6 AI组舰算法核心接口  /api/v1/fleet‑formation （路演对照演示核心）
+
+ 
+
+1.  POST /api/v1/fleet‑formation/calc‑recommend 
+
+ 
+
+请求入参：mission_id、候选人员user_id数组；触发后端组舰算法；返回推荐舰队方案、风险清单、匹配解释报告。
+
+ 
+
+2.  POST /api/v1/fleet‑formation/demo/re‑calc‑swap‑user 
+
+ 
+
+✨路演演示模式专属接口：替换候选池内指定user_id（Alpha ↔ Beta），其余入参完全不变，重新运行组舰，直接返回新舰队结果。前端页面一个按钮调用此接口，完成赛道强制对照演示。
+
+ 
+
+3.  POST /api/v1/fleet‑formation/confirm‑fleet  指挥官确认舰队，写入fleet数据库，生成舰队编号NW‑F‑XXXX；后端执行硬约束校验（治理舱真人强制校验）；校验失败返回风险，不允许确认。
+
+4.  PUT /api/v1/fleet‑formation/{fleet_id}/manual‑adjust  指挥官手动调整席位分配；提交之后后端重新计算风险清单返回前端。
+
+ 
+
+12.7 舰队舰桥工作台 & Mission阶段产出  /api/v1/fleet‑deck 
+
+ 
+
+1.  GET /api/v1/fleet‑deck/{fleet_id}/overview  获取舰队总览、21席分配、当前Mission阶段
+
+2.  POST /api/v1/fleet‑deck/{fleet_id}/phase‑output/submit  提交某一Mission阶段产出物
+
+3.  POST /api/v1/fleet‑deck/{fleet_id}/phase‑output/{output_id}/confirm  本阶段产出确认完成；决策节点会做后端强制校验：操作人必须是分配的【决策者】真人账号，否则返回403拒绝流转状态。
+
+ 
+
+12.8 舰载智能Agent集群  /api/v1/ship‑intelligence 
+
+ 
+
+1.  POST /api/v1/ship‑intelligence/agent/call 
+
+ 
+
+入参：mission_id、fleet_id、agent_name（Research‑Agent / Decomposition‑Agent / Risk‑Agent / Audit‑Agent）、用户指令文本；
+
+后端逻辑：自动装配上下文（Mission目标、已有阶段产出），调用对应Agent Prompt模板，请求大模型；完整记录agent_call_log日志；返回Agent输出文本。
+
+⚠️重要：该接口只返回Agent文本建议；绝对不会修改任何Mission/fleet业务状态；业务状态变更，必须走上面phase‑output/confirm人类确认接口。强制拦截器在后端生效，前端无法绕过。
+
+ 
+
+2.  GET /api/v1/ship‑intelligence/agent‑call‑log/list  获取本舰队全部Agent调用历史日志，用于Innovate Trace航迹导出。
+
+ 
+
+12.9 Mission协作反馈 & 航行档案回填  /api/v1/mission‑feedback 
+
+ 
+
+1.  POST /api/v1/mission‑feedback/submit  Mission收尾，提交协作结构化反馈表单
+
+2.  POST /api/v1/mission‑feedback/{mission_id}/trigger‑passport‑iteration 
+
+ 
+
+全部反馈收集完成后，触发后端航行档案快照迭代计算；生成每一位舰员全新passport_snapshot_id快照版本；旧快照记录永远保留不覆盖。
+
+ 
+
+12.10 报告&导出接口（比赛提交关键）  /api/v1/report 
+
+ 
+
+1.  GET /api/v1/report/mission‑archive/{mission_id}/full‑report  获取Mission完整航行报告JSON
+
+2.  POST /api/v1/report/export‑innovate‑trace  导出Innovate Trace航迹文档（JSON/PDF二选一，直接匹配选手手册要求的四条航迹：问题、数据、验证、迭代）
+
+3.  POST /api/v1/report/export‑mission‑pdf  导出完整Mission航行报告PDF。
+
+ 
+
+12.11 MVP极简超级管理员后台接口  /api/v1/admin/simple 
+
+ 
+
+commercial‑v1完整运营后台会扩展更多接口；MVP仅最小集合：
+
+ 
+
+1.  GET /api/v1/admin/simple/demo‑preset/list  查看预置Alpha/Beta演示数据集
+
+2.  POST /api/v1/admin/simple/demo‑schema/reset  重置演示模式demo_schema数据库，清空全部演示测试数据；防止多次路演演示数据互相污染。
+
+3.  GET /api/v1/admin/simple/global‑llm‑call‑stat  查看大模型调用统计、token消耗，用于调试。
+
+ 
+
+12.12 前端TTS样例（MVP）
+
+ 
+
+无后端接口，纯前端Web Speech API；不需要网络请求。
+
+ 
+
+12.13 错误码规范
+
+ 
+
+错误码 含义 
+
+400 请求参数非法，业务校验失败 
+
+401 未登录、JWT过期 
+
+403 权限不足；越权访问他人私有航行档案；试图让Agent直接流转Mission业务状态；决策节点操作人不是分配的决策者真人 
+
+404 资源不存在 
+
+409 业务状态冲突：Mission状态不允许执行当前操作（例如草稿Mission不允许提交反馈） 
+
+422 大模型解析失败；答卷解析异常 
+
+429 大模型调用限流 
+
+500 服务内部异常 
+
+ 
+
+全部接口返回统一JSON结构体
+
+ 
+
+json  
+
+{
+
+  "code": 200,
+
+  "msg": "success",
+
+  "data": {...业务返回体...}
+
+}
+
+ 
+
+ 
+
+ 
+
+ 
+
+13 MVP‑Hackathon分支 Demo完整执行流程（比赛演示专用，可直接复制给开发+路演选手）
+
+ 
+
+本流程严格对齐选手手册的赛道演示硬性要求：
+
+①先用一份脱敏私有数据完整跑通核心流程；
+
+②切换第二份完全不同的用户私有航行档案，展示输出实质差异；
+
+③条件允许，展示初始化快照 VS Mission回填迭代之后快照对比。
+
+禁止只播放预录视频；Demo支持现场真实交互。
+
+ 
+
+13.0 Demo前置准备（开发阶段预置完成）
+
+ 
+
+1. 数据库demo_schema预置两套脱敏模拟航行档案快照： User‑Alpha 、 User‑Beta 
+
+- Alpha画像：高探索力，极低守护/风险能力；TOP席位【探索者、提案者、连接者】；治理舱席位得分极低。
+
+- Beta画像：高守护力、风险审核能力；低探索想象力；TOP席位【风险官、审核者、守门人】；探索舱席位得分极低。
+
+2. 预置固定Mission： Mission‑NW‑M‑DEMO‑001｜探索AI时代新型社区经济模型 ；配置本Mission硬约束：治理舱【决策者、风险官、守门人】必须真人。
+
+3. 预置固定候选池：一共8名模拟舰员；其中7位为固定不变的模拟用户；第8位为可替换位，可一键在Alpha / Beta之间切换。
+
+4. 魔搭创空间部署完成；后端服务Running；前端Web页面可以直接访问；全部链接提前测试，避免现场失效。
+
+5. 演示模式全局开关打开；页面顶部常驻半透明黄色提示条【演示模式｜全部为脱敏模拟航行档案，仅供路演对照，非真实业务数据】。
+
+ 
+
+13.1 Demo完整步骤（现场操作时间控制3‑4分钟）
+
+ 
+
+Step 1｜首页世界观与TTS样例（30s）
+
+ 
+
+打开Web Demo首页；点击右上角悬浮领航员NPC头像；触发浏览器Web Speech TTS播报世界观Slogan；快速介绍项目定位、赛道命题：未定信号，护城河来自私有持续积累的航行档案。
+
+ 
+
+Step2｜演示：生成航行档案（初始化）（45s）
+
+ 
+
+两种可选操作，路演二选一：
+
+方案A（真实走答题流程）：点击申请登舰，进入登舰测试，完成3道开放式情景问答，提交答卷，后端调用LLM解析，生成初始化航行护照快照，展示8维雷达图、TOP3席位。
+
+方案B（比赛现场节省时间，优先推荐）：点击演示模式按钮【载入预置User‑Alpha档案】；系统瞬间载入Alpha完整初始化航行档案快照，展示Alpha的航行护照页面；高亮Alpha的TOP3席位：探索者、提案者、连接者；同时说明：这只是初始化，真正护城河来自后续Mission任务的反馈回填迭代。
+
+ 
+
+Step3｜进入AI组舰模块，第一组舰队生成（60s，核心演示）
+
+ 
+
+1. 进入候选池页面，确认候选池：7位固定模拟舰员 + 当前是User‑Alpha；Mission选择预置 NW‑M‑DEMO‑001 ；
+
+2. 点击【运行AI组舰算法】；后端执行组舰计算；页面渲染生成 NW‑F‑DEMO‑001 舰队；
+
+3. 展示舰队21席分配结果：User‑Alpha被分配到【探索舱‑探索者】核心席位；治理舱风险官、守门人由另外固定候选池真人承担；页面展示组舰匹配解释报告、风险清单。
+
+ 
+
+口头讲解：这是Alpha档案输入得到的舰队方案。
+
+ 
+
+Step4｜【赛道硬性对照实验：一键替换用户私有航行档案，其余全部条件不变】（45s，评委打分关键点）
+
+ 
+
+1. 不修改Mission目标、不改动其余7位候选舰员；仅仅点击页面按钮【替换可替换成员：Alpha → Beta】；前端调用专属演示接口 /api/v1/fleet‑formation/demo/re‑calc‑swap‑user 。
+
+2. 后端：替换候选池内该位置用户为预置User‑Beta完整私有航行档案快照；全部其他入参保持原样，重新完整运行一遍组舰算法。
+
+3. 页面刷新展示全新舰队方案：
+
+- User‑Beta不再分配探索舱；被分配到【治理舱‑风险官、守门人】关键席位；
+
+- 探索舱的探索者席位，算法从剩下7位固定候选人员中重新挑选另外人员补位；
+
+- 整套舰队席位分配、匹配依据、风险清单全部发生实质性变化。
+
+ 
+
+✨口头重点阐述给评委：
+
+“大家可以看到，Mission完全没变，其他候选者全部没变；仅仅更换一份用户独有的私有航行档案，系统输出的舰队编组发生本质改变。这正是未定信号赛道要求：系统输出高度依附用户独有的私有数据；换数据，结果完全不一样。”
+
+ 
+
+Step5｜进入舰桥工作台，演示舰载智能，贯彻“AI加速，人类决定航向”（45s）
+
+ 
+
+1. 选择其中一支舰队（例如Beta版本的演示舰队），点击进入【舰桥工作台】；
+
+2. 展示页面三栏布局：左侧21席三舱席位面板；中间Mission‑Graph七步闭环流程图；右侧舰载智能Agent集群面板；
+
+3. 演示调用Agent：选中【Risk‑Agent风险Agent】，输入指令：“针对本次Mission目标，扫描潜在风险点”；触发Agent调用；后端记录完整agent_call_log航迹日志；
+
+4. Agent返回一份风险分析报告；页面清晰展示三个按钮：【全部接受】【修改】【驳回】；
+
+5. 现场手动点击【修改】，人为改写一部分Agent输出；强调：Agent输出仅仅是建议；Mission流程不会自动往下流转；必须人类确认，业务状态才会变更；AI不能替人类决定航向。
+
+6. Mission‑Graph流程图不会自动前进；只有人类点击确认之后，流程节点才会切换到下一阶段；
+
+ 
+
+Step6｜模拟Mission收尾，演示航行档案回填迭代（30s，展示护城河形成机制）
+
+ 
+
+1. 点击演示模式的模拟Mission完成按钮（仅Demo可用）；系统自动生成模拟协作反馈；触发后端航行档案快照迭代服务。
+
+2. 打开User‑Beta航行护照；对比迭代之后新版本快照 VS 最开始初始化版本快照；页面展示21席分数发生变化，生成一条新的快照版本号；旧初始化快照仍然完整保存在系统，可回溯查看。
+
+ 
+
+口头讲解：“每一次航行Mission完成，协作反馈会回填到航行档案，生成新的版本快照；初始化测试只占30%权重，70%来自真实协作历史；使用越久，这份档案越独一无二，别人抄不走，这就是本产品真正的护城河。”
+
+ 
+
+Step7｜导出Innovate Trace航迹文档（比赛提交物演示，20s）
+
+ 
+
+点击页面按钮【导出Innovate Trace航迹PDF】；系统调用报告导出接口；直接生成符合选手手册要求的四条航迹文档：问题、数据、验证、迭代；可以直接作为比赛提交材料。
+
+ 
+
+Step8｜Demo收尾总结（20s）
+
+ 
+
+口头总结：
+
+“以上是新大陆俱乐部MVP可运行原型。我们完成登舰测试、生成私有航行档案、AI组舰对照实验、舰桥人机协同Mission闭环、任务反馈回填迭代航行档案。
+
+我们严格遵循未定信号赛道：产品能力依附用户持续积累的私有航行档案；更换私有数据，输出发生实质差异；剥离私有档案，系统退化为通用情景问卷；剥离AI，人工无法规模化解析几十人认知并完成互补编组。
+
+远期我们会继续迭代APU生产力单元、新大陆经济实验室，作为V2.0构想，本次Demo不做落地实现。”
+
+ 
+
+⚠️路演现场避坑清单
+
+ 
+
+1. 绝对不要讲：“我们的护城河来自登舰测试问卷”；反复强调问卷只是初始化起点；真正护城河来自Mission之后持续回填的协作航行档案。
+
+2. 不要混淆演示模拟数据和真实业务；页面顶部演示模式提示条必须常驻。
+
+3. 所有Agent调用，必须现场展示人类确认/修改/驳回按钮；明确AI不能自动流转Mission。
+
+4. 对照实验，不要手动改页面数据作假；必须后端真实重新运行组舰算法生成两套不同结果，后台日志可查，评委有可能会检查后台过程日志（Innovate Trace）。
+
+ 
+
+13.2 Demo的预置数据集脚本
+
+ 
+
+scripts/init‑demo‑preset‑snapshot.py；脚本功能：运行之后自动向demo_schema写入User‑Alpha、User‑Beta两套完整脱敏模拟航行档案快照；包含模拟原始登舰作答文本、8维分数、21席完整得分；用于开发、路演环境一键初始化；AtomCode需要实现该脚本。
+
+ 
+
+ 
+
+ 
+
+14 部署架构、环境配置、CI/CD
+
+ 
+
+14.1 mvp‑hackathon｜魔搭创空间部署（比赛唯一正式部署环境）
+
+ 
+
+参考中客松选手手册提交要求：作品必须部署魔搭创空间，路演时刻保持Running状态。
+
+ 
+
+环境规格建议（魔搭创空间容器）
+
+ 
+
+- 容器镜像：Python 3.11；
+
+- 资源：2核4G内存；不需要GPU；全部大模型调用走外部推理API（魔搭ModelScope推理服务 / OpenAI兼容接口），不在本地容器部署大模型，节省算力资源。
+
+- 容器内部运行：FastAPI后端服务 + Vue3前端Web静态资源（可以用uvicorn挂载静态前端dist产物，或者使用简单nginx；魔搭创空间支持端口暴露）。
+
+- 数据库方案：
+
+方案A（比赛Demo最简单）：MVP开发与演示阶段使用SQLite文件数据库，降低部署难度；⚠️注意：SQLite仅用于Demo演示；并发弱，商业版本必须切换PostgreSQL。
+
+方案B：魔搭创空间挂载外部PostgreSQL实例（如果可以开通云数据库）。
+
+ 
+
+📌开发给AtomCode的重要说明：代码中数据库连接做配置开关； .env 文件中 DB_ENGINE=sqlite 为演示模式； DB_ENGINE=postgresql 商业版本。Demo使用SQLite，省去容器安装PostgreSQL的繁琐，保障48小时部署成功。
+
+但是数据库的表结构、字段、ORM模型完全按照PostgreSQL设计；切换数据库引擎，业务代码不需要改动。
+
+ 
+
+魔搭创空间部署步骤文档  deploy/modelscope‑deploy.md （写进仓库，方便参赛同学部署）
+
+ 
+
+1. 仓库代码上传魔搭创空间；
+
+2. 构建环境：安装requirements.txt全部python依赖；前端web执行 npm install && npm run build ，产出dist静态文件夹；
+
+3. 配置.env环境变量：
+
+- 填入魔搭ModelScope大模型推理API密钥（OpenAI兼容格式）；
+
+- 设置 MOCK_DEMO_MODE=true 开启演示模式；
+
+- 设置 DB_ENGINE=sqlite ；
+
+4. 执行数据库初始化： alembic upgrade head ；
+
+5. 运行预置demo数据集脚本： python scripts/init‑demo‑preset‑snapshot.py ；生成Alpha/Beta两套模拟档案；
+
+6. 启动服务： uvicorn app.main:app --host 0.0.0.0 --port 7860 ；魔搭创空间暴露7860端口；
+
+7. 访问对外链接，确认页面全部功能可用；完整跑一遍13章节Demo全流程；确认Demo对照实验可以正常运行；确认导出PDF、Innovate Trace文档功能正常；
+
+8. 保存运行实例，保持Running状态；复制对外访问链接，作为比赛提交的Demo链接。
+
+ 
+
+⚠️风险降级预案（魔搭容器崩溃）
+
+ 
+
+1. 本地准备一份完整离线录屏视频（≥2分钟，选手手册强制提交）；容器万一现场异常，可以播放预录视频作为兜底；但路演优先真实在线Demo交互。
+
+2. 本地笔记本电脑准备一套完全相同的完整环境；魔搭环境故障，可快速切换本机局域网演示。
+
+ 
+
+14.2 commercial‑v1部署架构（赛后商业版本）
+
+ 
+
+- 容器化：Docker Compose；服务拆分：Nginx、FastAPI后端、PostgreSQL、Redis、MinIO对象存储；可选FunASR语音服务；
+
+- CI/CD：GitHub Actions；提交代码自动运行ruff静态检查、单元测试；自动构建docker镜像；
+
+- 环境区分：dev开发环境、staging预发布、prod生产；
+
+- 对象存储：MinIO存储附件、报告PDF、图片；不再本地磁盘存文件。
+
+ 
+
+14.3 环境变量.env完整样例（.env.example，git提交，真实.env加入gitignore）
+
+ 
+
+env  
+
+# ====== 基础服务配置 ======
+
+SERVER_ENV=mvp‑hackathon
+
+DEBUG=true
+
+SERVER_HOST=0.0.0.0
+
+SERVER_PORT=7860
+
+
+
+# ====== 数据库配置 ======
+
+DB_ENGINE=sqlite  # mvp‑hackathon使用sqlite；commercial‑v1改为postgresql
+
+SQLITE_DB_PATH=./data/nwc_demo.db
+
+# postgresql配置，commercial‑v1启用
+
+# PG_HOST=127.0.0.1
+
+# PG_PORT=5432
+
+# PG_USER=postgres
+
+# PG_PASSWORD=xxxx
+
+# PG_DATABASE=new_world_club
+
+
+
+# ====== JWT鉴权密钥；生产环境务必更换长随机密钥 ======
+
+JWT_SECRET_KEY=CHANGE_ME_TO_LONG_RANDOM_SECRET
+
+JWT_ALGORITHM=HS256
+
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+
+
+# ====== 大模型LLM配置：魔搭ModelScope OpenAI兼容接口（比赛环境） ======
+
+LLM_BASE_URL=https://modelscope.cn/api/v1/inference/openai_compatible
+
+LLM_API_KEY=REPLACE_WITH_YOUR_MODEL_SCOPE_API_KEY
+
+LLM_MODEL_NAME=qwen2‑72b‑instruct
+
+LLM_TIMEOUT_SECONDS=120
+
+LLM_MAX_RETRY=2
+
+
+
+# ====== 演示模式开关，mvp‑hackathon开启；生产commercial‑v1必须关闭False ======
+
+MOCK_DEMO_MODE=true
+
+DEMO_SCHEMA_NAME=demo_schema
+
+
+
+# ====== 加密密钥，用于数据库敏感字段（用户原始答卷）字段级加密；生产环境必须强随机密钥 ======
+
+DB_FIELD_ENCRYPT_KEY=REPLACE_WITH_ENCRYPT_SECRET
+
+
+
+# ====== 文件存储配置，MVP使用本地文件夹；Commercial‑V1切换MinIO ======
+
+FILE_STORAGE_TYPE=local
+
+LOCAL_STORAGE_ROOT=./data/upload_files
+
+# MINIO配置，commercial‑v1启用
+
+# MINIO_ENDPOINT=127.0.0.1:9000
+
+# MINIO_ACCESS_KEY=xxx
+
+# MINIO_SECRET_KEY=xxx
+
+# MINIO_BUCKET_NAME=nwc‑production
+
+
+
+# ====== 日志配置 ======
+
+LOG_LEVEL=INFO
+
+LOG_FILE_PATH=./logs/nwc_backend.log
+
+ 
+
+ 
+
+14.4 单元测试、集成测试规划
+
+ 
+
+MVP分支：编写核心业务逻辑单元测试；重点测试：
+
+ 
+
+1. 21席席位分数加权计算公式单元测试；
+
+2. 航行档案快照版本生成逻辑测试（确认旧快照不会被覆盖）；
+
+3. 组舰算法硬约束校验单元测试：测试治理舱三个席位强制真人校验是否生效；单人兼任席位上限校验；
+
+4. Agent人类确认拦截器逻辑测试：验证Agent调用不能直接修改Mission业务状态；
+
+5. 演示模式的Alpha/Beta替换之后，组舰输出产生差异的集成测试。
+
+测试脚本路径： backend/tests/ ；使用pytest框架。
+
+commercial‑v1：增加更多接口自动化测试、压力测试。
+
+ 
+
+ 
+
+ 
+
+15 非功能需求：性能、安全、隐私、可观测
+
+ 
+
+15.1 性能（MVP Demo场景）
+
+ 
+
+1. 单用户并发Demo场景，同时在线≤20人；满足比赛现场演示；
+
+2. LLM解析登舰答卷接口：超时设置120s；大模型调用做重试；前端展示loading加载状态；
+
+3. AI组舰算法MVP启发式算法，候选池规模≤30人；MVP不支持上百人大规模候选池，大规模留给商业版本优化；
+
+4. PDF导出：Demo单份报告导出时间控制30s以内。
+
+ 
+
+15.2 安全需求（重点，赛道要求：数据授权、保护个人及商业信息）
+
+ 
+
+1. 私有数据访问鉴权：禁止仅靠前端隐藏控制权限；每一次读取用户原始答卷、完整航行档案，后端API强制校验访问授权。
+
+2. 用户原始登舰作答文本数据库字段级加密存储；密钥环境变量配置，不写死代码。
+
+3. JWT Token鉴权；密码bcrypt哈希存储；数据库绝不存储明文密码。
+
+4. 输入全部做校验：防止注入；SQLAlchemy ORM规避SQL注入；前端输入做XSS过滤；后端再次做输入净化。
+
+5. 大模型Prompt做输入过滤；防止Prompt注入攻击；用户输入的文本，做安全过滤，避免恶意指令篡改系统Prompt模板。
+
+6. 演示模式与正式业务库隔离；demo_schema和正式业务数据表物理隔离；演示模式开关生产环境强制关闭。
+
+7. 文件上传限制：文件类型白名单；限制文件大小；禁止上传可执行脚本。
+
+8. 日志禁止打印用户原始答卷明文；防止日志泄露私有敏感数据。
+
+9. 所有对外导出报告，严格按照用户授权范围输出字段；没有授权，原始答卷永远不会导出。
+
+ 
+
+15.3 隐私合规（对齐选手手册赛道要求）
+
+ 
+
+1. 用户拥有完整的数据主权：可以随时导出自己全部航行档案、原始答卷；可以申请删除账号（软删除deleted_at）。
+
+2. 登舰测试原始答卷默认不会用于模型训练优化；必须用户主动勾选授权，才可以把答卷用于产品迭代；默认为不授权。
+
+3. 航行档案对外展示默认最小脱敏视图（仅称号、星标、TOP3席位）；完整分数、原始答卷必须用户显式授权才对外暴露。
+
+4. 海报、Demo、演示视频里面全部使用人工构造脱敏模拟数据，绝不使用任何真实个人用户原始数据。
+
+ 
+
+15.4 可观测 & 过程留痕（Innovate Trace航迹基础）
+
+ 
+
+1. 所有Agent调用完整落库 ship_intelligence_agent_call_log ；记录输入prompt、大模型原始输出、人类的接受/修改/驳回操作、修改前后对比、token消耗、时间戳、操作人。这是比赛Innovate Trace过程证据的核心数据源。
+
+2. 所有Mission业务状态流转全部写审计日志：谁、什么时候、做了什么操作、变更前后字段快照。
+
+3. 航行档案每一次生成新版本快照全部完整入库，旧版本永不覆盖。
+
+4. 系统异常完整日志记录；错误告警。
+
+ 
+
+15.5 可解释AI硬性要求（评委评审点）
+
+ 
+
+1. AI输出的21席席位分数，点开可以查看explain_basis可解释依据；溯源到哪一条登舰回答 / 哪一次Mission协作反馈记录。
+
+2. AI组舰给出的每一条人员分配建议，附带匹配理由；溯源该舰员航行档案内证据；不允许黑盒输出。
+
+3. Agent返回的分析结果，记录完整输入上下文；可以回看Agent当时拿到了哪些Mission信息才生成该结论。
+
+ 
+
+ 
+
+ 
+
+16 风险清单 & 降级策略
+
+ 
+
+风险场景 风险等级 降级策略（MVP‑hackathon优先保障Demo可演示） 
+
+大模型API调用超时/限流/接口崩溃 🔴高 1. Demo预置两套已经LLM解析完成Alpha/Beta快照；对照演示不需要现场实时调用大模型；只有真实答题才需要调用LLM。2. 准备备选大模型API密钥（魔搭+OpenAI两套密钥），可以快速切换。3. 前端友好报错提示。 
+
+魔搭创空间容器宕机，Web服务不可访问 🔴高 1. 提前录制完整≥2分钟演示视频（提交物）；2. 本地笔记本准备一套完整可运行的备份环境；3. Demo的预置数据全部本地保存。 
+
+AI组舰算法逻辑bug，对照实验输出差异不明显 🟠中 1. 开发阶段单元测试：确认Alpha/Beta两套预置档案本身画像差异足够巨大；2. 预置脚本自动校验：替换用户之后舰队分配是否发生实质变化；开发阶段必须跑通这个校验，才允许提交Demo。 
+
+数据库损坏，演示数据丢失 🟠中 1. scripts文件夹提供一键重新初始化demo预置数据集脚本；现场出问题一键重建模拟库；2. SQLite数据库文件备份一份。 
+
+PDF导出Innovate Trace文档报错，无法导出提交物 🟡低 1. 提前导出一份完整PDF样例，作为兜底提交文件；2. 前端同时支持导出JSON格式航迹，JSON一定保证可以导出，可离线转PDF。 
+
+前端舰桥Mission‑Graph流程图渲染异常 🟡低 1. ECharts渲染为主；mermaid作为降级备选；2. 准备静态截图，页面渲染异常时展示静态演示截图，保证讲解可以继续。 
+
+现场网络差，大模型API无法访问 🔴高 >Demo的核心对照实验（Alpha↔Beta组舰）完全不依赖实时大模型调用，全部使用预生成快照；仅真实登舰答题才调用LLM；路演优先走载入预置快照方案，不走现场答题，规避网络风险。 
+
+ 
+
+🎯最重要的一条降级策略：路演核心的对照演示环节，不要强依赖现场实时LLM推理；使用预解析完成的预置Alpha/Beta快照，保证无论大模型API是否可用，赛道硬性对照实验都可以完整跑通。 真实LLM解析答卷功能保留给评委体验与赛后使用；路演演示优先载入预置快照。
+
+ 
+
+ 
+
+ 
+
+17 交付物完整清单｜代码、文档、比赛提交材料
+
+ 
+
+17.1 代码仓库交付物（Github）
+
+ 
+
+1. 双分支： mvp‑hackathon （比赛版本）； commercial‑v1 （商业迭代版本）；
+
+2. 完整前后端源代码；目录严格遵守上文目录规范；
+
+3. 数据库ORM模型；alembic迁移脚本；
+
+4. 演示数据集初始化脚本；
+
+5. 全部第三方开源组件，版本号固定；requirements.txt、package.json；
+
+6. 部署文档：魔搭创空间部署指南、本地开发启动README；
+
+7. 单元测试用例；
+
+8. 本份完整PRD文档，放在 docs/prd/NWC‑V1‑Full‑PRD.md ；
+
+9. 评委问答预案、路演演示脚本；
+
+10. 海报文案源文件；Innovate Trace航迹导出模板。
+
+ 
+
+17.2 中客松2026比赛强制提交物（严格对齐选手手册9月13日上午10点截止）
+
+ 
+
+1. ✅Demo可访问链接（魔搭创空间Running状态）；文件命名： 队名_新大陆俱乐部_Demo链接 
+
+2. ✅演示视频 ≥2分钟；必须包含完整对照演示；命名： 队名_新大陆俱乐部_Demo视频 
+
+3. ✅竖版海报 80cm × 180cm，4:9，高清PNG/JPG；命名： 队名_新大陆俱乐部_海报 
+
+4. ✅Innovate Trace航迹文档（四条航迹：问题、数据、验证、迭代，PDF）；命名： 队名_新大陆俱乐部_InnovateTrace 
+
+5. ✅可选：Github代码仓库链接；命名： 队名_新大陆俱乐部_Github代码 
+
+ 
+
+海报内容清单（80×180cm竖版4:9）
+
+ 
+
+海报版面划分，从上往下：
+
+ 
+
+1. 顶部大标题：新大陆俱乐部 New World Club｜21席灵魂协作操作系统；Slogan：不是寻找最优秀的人，而是寻找可以共同完成伟大航行的互补个体；副标题：中客松2026｜未定信号赛道
+
+2. 世界观简短叙述：哥伦布航海隐喻，八种AI时代的新大陆；核心命题：AI让星舰跑得更快，人类决定星舰驶向何方。
+
+3. 赛道四大自检问题（清晰分四块展示；评委第一眼可以看到你们完成赛道命题）
+
+4. 核心业务流程图：完整闭环【申请登舰 → 登舰测试 → 生成航行档案 → AI组舰（对照实验）→ 舰桥Mission七步闭环 → 协作反馈回填迭代航行档案】
+
+5. 21席三舱简图：探索舱7席｜建造舱7席｜治理舱7席；简单图标；标注硬约束：治理舱决策者、风险官、守门人必须真人。
+
+6. Demo核心截图：①航行护照8维雷达图截图；②AI组舰对照实验两套结果截图；③舰桥工作台Mission‑Graph截图；④Agent人机确认界面截图。
+
+7. 护城河说明文字：护城河不是一次性登舰问卷；来自Mission持续回填的私有航行档案；更换私有档案，系统输出实质改变；去掉私有档案退化为通用问卷；去掉AI，人力无法规模化完成编组。
+
+8. 右下角：V2.0远期展望（新大陆经济实验室、APU生产力单元、生产力凭证APU Credit；小字，不要占主版面，明确标注【远期构想，本次Demo未实现】）。
+
+9. 最底部：Demo访问二维码；队伍名称；赛道名称。
+
+ 
+
+17.3 Innovate Trace 四条航迹完整成文（直接导出，比赛提交）
+
+ 
+
+对应选手手册07章节BUILD & EVIDENCE要求，四条航迹：问题、数据、验证、迭代。
+
+ 
+
+航迹1｜问题
+
+ 
+
+当下创新项目、黑客松、开源协作的组队方式高度依赖简历、自我技能标签；简历是人的自我美化描述，无法表征参与者真实的认知模式、风险偏好、历史协作表现。很多创新项目技术人员齐全，但完成复杂使命所必须的认知职能席位出现缺失，导致项目中途失败，大量人力成本沉没。
+
+我们的目标用户：复杂创新使命的发起者、创新项目参与者、开源与社会创新协作人员。
+
+本项目希望解决：如何基于人真实的协作行为数据，而不是自我简历，完成复杂使命的人机互补编组；构建一套“未定信号”产品：产品输出高度依附用户独有的持续积累的私有航行档案。
+
+ 
+
+航迹2｜数据
+
+ 
+
+本产品独有私有数据资产为用户航行档案Expedition Passport；由两部分组成：
+
+1）初始化输入：登舰测试的用户开放式情景作答原始文本，记录用户面对危机情景的真实推理路径、风险选择；
+
+2）核心护城河来源：每一次Mission航行使命完成之后回填的协作反馈记录；记录该舰员在21个认知席位上的真实产出、协作表现、风险事件；该数据属于用户个体独有，外部无法获取；每一次反馈都会生成航行档案全新版本快照，旧版本永久保留，不覆盖。
+
+Demo演示阶段，全部使用人工构造脱敏模拟航行档案数据集User‑Alpha、User‑Beta；两套档案认知特征完全相反；用于完成赛道强制对照演示；没有使用任何真实自然人隐私数据。
+
+产品核心个体差异验证：同一Mission、同一候选池，仅仅替换一份用户私有航行档案，AI组舰输出的舰队席位分配会发生实质性改变。
+
+两条“去掉测试”：①去掉私有航行档案，系统退化为通用情景问卷，无法生成个性化21席画像与定制化舰队编组；②去掉AI舰载智能，人工解析几十位候选者开放式文本、做多维度能力评估、互补舰队编组，人力成本极高，无法规模化。
+
+ 
+
+航迹3｜验证
+
+ 
+
+我们开展多轮内部模拟验证：
+
+ 
+
+1. 数据集对照验证：预置两套完全相反的脱敏模拟航行档案Alpha与Beta；固定Mission与其余候选人员；运行组舰算法；确认替换用户档案之后舰队分配发生实质差异；满足未定信号赛道个体差异的演示要求。
+
+2. 业务规则验证：单元测试校验治理舱【决策者、风险官、守门人】强制真人硬约束；当候选池无法提供真人，组舰算法输出致命风险告警，不允许确认舰队。
+
+3. 人机边界验证：反复测试Agent调用链路；确认Agent输出只能给出建议；Mission业务状态流转必须真人确认；Agent永远无法自动推进Mission闭环，贯彻“AI加速航行，人类决定航向”的产品原则。
+
+4. 退化场景验证：模拟移除全部Mission回填的协作反馈，仅仅保留初始化登舰答卷；系统能力退化为普通情景测试，无法产出高可信度的协作编组建议，验证产品护城河来自持续积累的航行档案。
+
+5. 流程全链路验证：完整跑通Demo全链路：申请登舰→生成航行档案→AI组舰对照实验→舰桥Mission七步闭环→Mission收尾反馈回填生成新版本航行档案→导出Innovate Trace航迹文档。
+
+ 
+
+航迹4｜迭代
+
+ 
+
+项目早期原始构想：一个面向创新人才的招聘/求职匹配平台。
+
+第一轮迭代：根据未定信号赛道命题，剥离求职招聘的业务语境；意识到单纯简历匹配不具备护城河；产品定位从“人才招聘平台”转向“复杂创新使命的人机协作编组系统”。
+
+第二轮迭代：发现“一次性问卷测试”不具备真正护城河；问卷仅仅是初始化；将产品核心壁垒重新定义为Mission任务完成后持续回填迭代的私有航行档案快照；调整21席分数权重：登舰测试初始化仅占30%权重，70%权重来自真实历史协作反馈。
+
+第三轮迭代：确立人机边界硬规则；AI舰载智能只能做辅助建议；关键使命决策、Mission状态流转必须真人确认；增加后端全局“人类确认拦截器”，从底层防止Agent越权执行业务变更。
+
+第四轮迭代：区分MVP‑hackathon比赛版本与commercial‑v1商业版本；把宏大的APU生产力凭证、新大陆经济实验室降级为远期V2.0构想；MVP只聚焦完成赛道必须的核心闭环；避免Demo概念空洞无法落地。
+
+第五轮迭代：针对黑客松48小时开发与现场演示风险，设计演示模式；预置两套脱敏模拟航行档案；赛道硬性对照实验不依赖现场实时大模型推理，提升路演演示稳定性；同时完善全套降级预案。
+
+后续迭代规划（V2.0商业版本）：完善大规模候选池优化算法；完整NPC‑TTS‑ASR游戏化交互；多租户组织中台；APU生产力单元完整业务；扩展更多Agent；接入向量数据库，支持语义检索候选池。
+
+ 
+
+✅这份航迹文档，代码可以直接把以上文本+系统自动导出的日志证据合并生成PDF，直接提交比赛。
+
+ 
+
+17.4 路演PPT逐页大纲（总共12页，路演8‑10分钟）
+
+ 
+
+1. P1封面：项目名称、Slogan、队伍、赛道：未定信号；
+
+2. P2｜问题背景：现有组队工具的痛点；赛道四大自检快速预览；哥伦布航海隐喻，AI时代八种新大陆；
+
+3. P3｜产品核心世界观：21席三舱；Mission七步闭环；航行档案作为私有数据资产；AI舰载智能定位；两条去掉测试；
+
+4. P4｜核心概念讲解：登舰、航行档案、21席不是职业而是认知职能；舰队；舰载智能；
+
+5. P5｜整体产品业务闭环流程图；MVP vs V2.0边界，明确哪些是Demo落地，哪些是远期构想；
+
+6. P6｜Demo演示页（现场切换网页Demo，PPT停留本页）；
+
+7. P7｜Demo关键截图1：两套航行档案对照实验结果截图，重点标注：仅仅更换用户私有档案，舰队输出发生实质差异；
+
+8. P8｜Demo关键截图2：舰桥工作台；Agent的人类确认/修改/驳回按钮截图；展示人机边界；
+
+9. P9｜赛道评分对齐：对应四项评分维度（创新性30%、技术完成度25%、项目价值25%、路演答辩20%）逐条说明我们项目如何匹配评审标准；同时说明Innovate Trace航迹记录。
+
+10. P10｜风险与迭代：项目迭代过程（航迹4的摘要）；MVP局限；V2.0远期展望：新大陆经济实验室、APU生产力单元；明确标注：远期构想本次Demo未实现。
+
+11. P11｜项目交付物清单：魔搭Demo链接、演示视频、海报、Innovate Trace航迹文档、Github代码；
+
+12. P12｜Q&A问答页。
+
+ 
+
+17.5 评委高频问答完整应答库（打印给答辩队员）
+
+ 
+
+把前面我给你的预判问答全部纳入，并且补充新增的架构、数据、安全相关问题。
+
+例如：
+
+Q：你的护城河看起来只是人格测试，怎么证明不是套壳通用AI？
+
+Q：21席强制21个人吗？21个人现实很难凑齐？
+
+Q：你们的APU生产力凭证、经济循环现在实现到什么程度？
+
+Q：数据来源是什么？隐私如何保护？
+
+Q：如果用户的历史协作反馈是主观评价，如何避免反馈偏见污染航行档案？
+
+Q：组舰算法是怎么实现的？大规模百人候选池可以跑吗？
+
+Q：Agent会不会绕过人类确认直接修改任务？后端如何保证这个约束生效？
+
+Q：如果用户不想把自己的航行档案给别人看，权限如何控制？
+
+ 
+
+ 
+
+ 
+
+18 非开发事项：给团队的项目管理清单（48小时黑客松时间排期）
+
+ 
+
+mvp‑hackathon分支，48小时（对应比赛9.12全天开发+9.13上午打磨）
+
+假设4人团队：产品叙事1人；前端1人；后端AI&数据库1人；演示答辩1人。
+
+ 
+
+Day 1（对应比赛9月12日，集中开发日）
+
+ 
+
+- 08:30‑09:00：团队对齐完整PRD；确认MVP范围；明确哪些功能坚决不做；分配任务；
+
+- 09:00‑12:00：后端：初始化项目仓库；数据库ORM模型；alembic迁移；预置Alpha/Beta模拟数据集脚本；基础鉴权接口；前端：搭建Vue3项目；基础路由；首页世界观页面；TTS样例；
+
+- 12:00‑13:30：午餐，导师巡场沟通；
+
+- 13:30‑18:00：后端：登舰测试接口、LLM解析Prompt模板、航行档案快照生成逻辑；组舰启发式算法、演示模式专属对照接口；Agent基础调用接口+人类确认拦截器；前端：登舰测试页面、航行护照雷达图组件、候选池页面、组舰页面（重点：Alpha↔Beta一键切换按钮UI）；
+
+- 18:00‑19:00晚餐；
+
+- 19:00‑22:00：夜间开发；后端：Mission、舰队、舰桥基础接口；协作反馈基础接口；Innovate Trace导出接口；前端：舰桥工作台页面，Mission‑Graph流程图；Agent集群面板；PDF导出组件；21:30执行第一次完整端到端全链路联调；重点测试【对照演示实验】是否可以完整跑通；发现bug，连夜修复；
+
+ 
+
+⚠️最重要的里程碑：Day1晚上22点之前，必须把赛道最核心的对照演示实验跑通；如果这个核心Demo跑不通，其余锦上添花的页面全部可以降级砍掉。
+
+ 
+
+Day2（比赛9月13日，上午08:30‑11:30；提交截止10点）
+
+ 
+
+- 08:30‑09:30：稳定性打磨；bug修复；完善异常降级；运行预置数据集脚本，重置演示库；魔搭创空间部署；确认Demo链接Running；
+
+- 09:30之前：海报必须提交（选手手册明确海报9:30提交）；导出Innovate Trace航迹PDF；录制≥2分钟兜底演示视频；
+
+- 09:30‑10:00：全部三项必交材料完成提交（Demo链接、视频、海报、航迹文档）；
+
+- 10:00‑11:30：反复完整演练路演Demo全流程；每个人答辩队员熟悉评委问答库；准备本地备份环境；优化页面文案、演示模式提示条；清理Demo页面多余调试信息；
+
+- 11:30之后：进入比赛提交准备、评委预审、候场。
+
+ 
+
+重要红线：9月13日上午提交截止之后，不再新增任何功能；只做bug修复与演示演练。
+
+ 
+
+ 
+
+ 
+
+19 给AtomCode的总指令（复制粘贴放在PRD文档最末尾，开发前必读）
+
+ 
+
+📌【给AI开发助手AtomCode总指令】
+
+你现在拿到完整《新大陆俱乐部 NWC V1.0 完整PRD文档》；分为两个代码分支： mvp‑hackathon （中客松2026未定信号赛道48小时可运行Demo，部署魔搭创空间）； commercial‑v1 （商业完整版本，赛后迭代）。
+
+ 
+
+开发硬性约束，不可违背
+
+ 
+
+1. 优先开发 mvp‑hackathon 分支；严格区分MVP与Commercial‑V1的功能边界；不要把商业版本的重型功能（完整NPC多轮对话、ASR、向量数据库、RBAC多租户、APU Credit真实经济逻辑）写进MVP分支；MVP只保留数据模型骨架，不实现业务逻辑。
+
+2. 所有核心业务规则：21席分数加权公式、航行档案快照版本永不覆盖旧记录、组舰算法三大硬约束（治理舱三席位必须真人、单人兼任席位上限）、舰载智能Agent后端全局人类确认拦截器，全部实现在后端代码，绝对不可以把核心业务逻辑放在前端。前端仅做展示交互。
+
+3. 赛道硬性演示需求：实现【演示模式】；预置两套脱敏模拟航行档案User‑Alpha、User‑Beta；实现专属接口，Mission不变，其余候选池不变，一键替换该用户私有航行档案，后端完整重新运行组舰算法，输出两套实质不同的舰队结果；该对照实验是评审核心，必须真实后端计算，禁止前端伪造页面结果。
+
+4. 大模型调用：兼容魔搭ModelScope OpenAI兼容推理接口；全部Prompt模板存入数据库 system_prompt_template 表；不要硬编码长Prompt散落在业务代码中；登舰测试解析Prompt、4个Agent（Research‑Agent、Decomposition‑Agent、Risk‑Agent、Audit‑Agent）的Prompt全部纳入模板管理。
+
+5. 隐私安全：用户原始登舰答卷 user_answer_raw_list 必须数据库字段级加密存储；后端每一次读取私有航行档案、原始答卷，必须鉴权校验访问授权；不能仅依靠前端页面隐藏权限。航行档案快照永远只新增，绝不update旧快照记录；版本完整可回溯。
+
+6. 代码目录严格遵循本PRD定义目录结构；第三方开源组件版本号全部固定；按照文档给出GitHub仓库、安装命令，编写requirements.txt、package.json；
+
+7. MVP数据库优先使用SQLite文件数据库，降低魔搭创空间部署复杂度；ORM模型同时兼容PostgreSQL，commercial‑v1无缝切换；提供一键初始化演示数据集脚本 scripts/init‑demo‑preset‑snapshot.py ；提供演示模式数据库重置脚本。
+
+8. 实现Innovate Trace航迹完整日志记录：每一次Agent调用全部落库 ship_intelligence_agent_call_log ；Mission每一次业务状态流转写审计日志；可以直接导出选手手册要求的【问题、数据、验证、迭代】四条航迹PDF与JSON。
+
+9. MVP前端Web PC+H5自适应；使用Vue3+TS+Element‑Plus+TailwindCSS+ECharts；舰桥工作台、组舰页面优先保障PC完整；H5移动端复杂操作做降级，仅支持查看，提示跳转PC；MVP不做uni‑app、小程序、安卓iOS原生App；这些全部放在commercial‑v1分支。
+
+10. MVP的TTS仅使用浏览器原生Web Speech API实现首页领航员NPC简短样例播报；不实现完整多轮NPC会话、ASR语音识别；全部完整语音对话能力放到commercial‑v1分支。
+
+11. 代码中加入大量注释；本PRD文档随同代码放在仓库docs文件夹；关键业务规则在代码处写PRD文档位置引用；
+
+12. 完成核心业务之后，优先编写关键业务单元测试：21席分数计算、航行档案快照不覆盖、组舰硬约束校验、Agent人类确认拦截器、演示模式对照实验集成测试。
+
+13. 输出完整部署文档：魔搭创空间部署步骤；本地开发启动步骤；.env.example环境变量样例；
+
+14. 不要自行发挥新增PRD之外的业务功能；遇到需求歧义，以本PRD文档为准；如果有无法实现点，明确标注风险点与降级方案。
+
+ 
+
+交付顺序建议（开发优先级，按顺序完成）
+
+ 
+
+P0【最高优先级，必须第一时间完成，赛道Demo生死线】
+
+ 
+
+1. 数据库全部ORM模型；预置Alpha/Beta模拟数据集脚本；
+
+2. 鉴权JWT基础服务；
+
+3. 登舰测试会话；LLM解析服务；航行档案快照版本化存储逻辑；
+
+4. AI组舰启发式算法 + 演示模式一键替换用户对照实验接口；优先保证这条链路跑通；
+
+5. Agent基础调用 + 后端全局人类确认拦截器（禁止Agent自动流转Mission）；
+
+P1（核心业务页面与接口）
+
+6. Mission、舰队、21席席位分配业务；
+
+7. 舰桥工作台基础页面；Mission‑Graph流程图；
+
+8. Mission协作反馈、航行档案快照回填迭代逻辑；
+
+P2（导出、报告、演示辅助、UI美化）
+
+9. Innovate Trace航迹文档PDF/JSON导出；航行报告导出；
+
+10. 首页世界观、TTS样例；航行护照雷达图组件；
+
+11. MVP极简超级管理员后台（仅重置演示库、查看LLM调用统计）；
+
+P3（优化、bug修复、单元测试、部署文档、兜底录屏）
+
+12. 全链路端到端联调；修复bug；编写单元测试；
+
+13. 魔搭创空间部署；录制兜底演示视频；整理全部比赛提交物。
+
+ 
+
+ 
+
+ 
+
+附录A：21席完整中文名称枚举（代码中字符串严格使用，不要别名）
+
+ 
+
+后端所有数据库字段、接口入参、前端页面展示全部统一使用下面文本，避免出现“风险官/风险管理员”这类字符串不一致bug。
+
+ 
+
+A舱｜探索舱 Discover
+
+ 
+
+1. 探索者
+
+2. 发现者
+
+3. 观察者
+
+4. 研究者
+
+5. 想象者
+
+6. 提案者
+
+7. 连接者
+
+ 
+
+B舱｜建造舱 Build
+
+ 
+
+1. 指引者
+
+2. 战略师
+
+3. 架构师
+
+4. 拆解师
+
+5. 设计师
+
+6. 工程师
+
+7. 执行者
+
+ 
+
+C舱｜治理舱 Govern
+
+ 
+
+1. 导航者
+
+2. 决策者
+
+3. 监督者
+
+4. 风险官
+
+5. 审核者
+
+6. 仲裁者
+
+7. 守门人
+
+ 
+
+常量代码示例（后端Python，复制给AtomCode）
+
+ 
+
+python  
+
+# backend/app/core/constants/seat_constants.py
+
+from typing import Final, List
+
+
+
+# 探索舱
+
+DISCOVERY_CABIN_SEATS: Final[List[str]] = [
+
+    "探索者",
+
+    "发现者",
+
+    "观察者",
+
+    "研究者",
+
+    "想象者",
+
+    "提案者",
+
+    "连接者"
+
+]
+
+
+
+# 建造舱
+
+BUILD_CABIN_SEATS: Final[List[str]] = [
+
+    "指引者",
+
+    "战略师",
+
+    "架构师",
+
+    "拆解师",
+
+    "设计师",
+
+    "工程师",
+
+    "执行者"
+
+]
+
+
+
+# 治理舱
+
+GOVERN_CABIN_SEATS: Final[List[str]] = [
+
+    "导航者",
+
+    "决策者",
+
+    "监督者",
+
+    "风险官",
+
+    "审核者",
+
+    "仲裁者",
+
+    "守门人"
+
+]
+
+
+
+ALL_21_SEATS: Final[List[str]] = DISCOVERY_CABIN_SEATS + BUILD_CABIN_SEATS + GOVERN_CABIN_SEATS
+
+
+
+# 硬约束：必须真人的治理舱席位，Agent绝对不能临时补位
+
+MUST_HUMAN_GOVERN_SEATS: Final[List[str]] = ["决策者", "风险官", "守门人"]
+
+
+
+# 单人最多兼任席位数量（MVP配置，可环境变量调整）
+
+MAX_DOUBLE_SEAT_PER_USER: Final[int] = 5
+
+ 
+
+ 
+
+附录B：Mission七阶段枚举（代码全局常量）
+
+ 
+
+python  
+
+# backend/app/core/constants/mission_phase_constants.py
+
+from typing import Final, List
+
+
+
+MISSION_PHASE_ORDER: Final[List[str]] = [
+
+    "提出",
+
+    "指引",
+
+    "拆解",
+
+    "执行",
+
+    "监督",
+
+    "决策",
+
+    "审核"
+
+]
+
+ 
+
+ 
+
+业务强制规则：状态流转只能按照数组顺序，不能跳阶段； 决策 阶段必须分配【决策者】真人账号才允许确认流转。
+
+ 
+
+附录C：全部枚举值汇总（数据库enum、接口入参、前端下拉框全部同源）
+
+ 
+
+C‑1 测试会话状态 test_session_status
+
+ 
+
+ 草稿 、 已提交 、 解析完成 、 解析失败 
+
+ 
+
+C‑2 快照来源类型 snapshot_source_type
+
+ 
+
+ test_init （登舰测试初始化）、 mission_feedback （Mission协作反馈回填）
+
+ 
+
+C‑3 Mission整体状态 mission_status
+
+ 
+
+ 草稿 、 待组建舰队 、 航行中 、 待收尾 、 已归档 
+
+ 
+
+C‑4 舰队状态 fleet_status
+
+ 
+
+ 待确认 、 航行中 、 已归档 
+
+ 
+
+C‑5 席位分配类型 assign_type
+
+ 
+
+ human 真人舰员、 agent_temp Agent临时补位
+
+ 
+
+C‑6 Agent人类操作类型 human_operation_type
+
+ 
+
+ accept全部接受 、 modify修改 、 reject驳回 
+
+ 
+
+C‑7 用户角色 user_role
+
+ 
+
+ member 普通舰员、 fleet_commander 舰队指挥官、 org_admin 组织管理员（商业版）、 platform_operator 平台运营（商业版）、 super_admin 超级管理员
+
+ 
+
+C‑8 用户称号 honor_title
+
+ 
+
+ Explorer 探索者、 Navigator 领航员、 Pathfinder 开拓者、 World‑Builder 世界建造者、 Civilization‑Builder 文明建造者
+
+ 
+
+C‑9 认知风格标签 cognitive_style_tags（只能从该集合选取，LLM不允许自创标签）
+
+ 
+
+ 发散型 、 收敛型 、 系统型 、 工程型 、 关系型 、 决策型 、 风险型 、 证据型 
+
+ 
+
+C‑10 8维能力字段 eight_dim_score 键名
+
+ 
+
+ 探索力 、 想象力 、 理解力 、 拆解力 、 执行力 、 协作力 、 守护力 
+
+ 
+
+附录D：全套Prompt模板（直接存入数据库system_prompt_template表，MVP内置初始数据脚本导入）
+
+ 
+
+⚠️ 所有Prompt禁止硬编码散落在业务代码；全部存在数据库模板表，支持版本号；脚本 scripts/init_system_prompt_templates.py ，项目初始化自动写入数据库。
+
+ 
+
+D‑1 登舰测试解析Prompt（模板key： test_analysis_v1 ）
+
+ 
+
+plaintext  
+
+# 角色：新大陆俱乐部登舰测试解析官
+
+## 世界观背景
+
+这是星际远航登舰测试，用户面对多道危机情景，给出自己的自由文本回答。
+
+你的任务：**不要评判回答的对错好坏；客观从用户的推理路径、风险偏好、决策模式、信息处理方式、协作倾向中提取结构化结果。**
+
+## 输出约束
+
+1. 严格输出JSON，禁止多余解释文字；JSON必须可以直接JSON.parse()解析。
+
+2. 输出包含如下字段：
+
+{
+
+  "eight_dim_score":{
+
+    "探索力":0‑100,
+
+    "想象力":0‑100,
+
+    "理解力":0‑100,
+
+    "拆解力":0‑100,
+
+    "执行力":0‑100,
+
+    "协作力":0‑100,
+
+    "决策力":0‑100,
+
+    "守护力":0‑100
+
+  },
+
+  "cognitive_style_tags":["标签1","标签2"],
+
+  "seat_init_score":{
+
+    "探索者":0‑100,
+
+    "发现者":0‑100,
+
+    "观察者":0‑100,
+
+    "研究者":0‑100,
+
+    "想象者":0‑100,
+
+    "提案者":0‑100,
+
+    "连接者":0‑100,
+
+    "指引者":0‑100,
+
+    "战略师":0‑100,
+
+    "架构师":0‑100,
+
+    "拆解师":0‑100,
+
+    "设计师":0‑100,
+
+    "工程师":0‑100,
+
+    "执行者":0‑100,
+
+    "导航者":0‑100,
+
+    "决策者":0‑100,
+
+    "监督者":0‑100,
+
+    "风险官":0‑100,
+
+    "审核者":0‑100,
+
+    "仲裁者":0‑100,
+
+    "守门人":0‑100
+
+  },
+
+  "explain_basis":[
+
+    {
+
+      "target_item":"字段名称",
+
+      "score":分数,
+
+      "basis_text":"从用户哪一段原始回答，提取到什么信号，支撑该分数"
+
+    }
+
+  ]
+
+}
+
+## 认知风格标签可选集合，只能从里面选，不能自创标签
+
+["发散型","收敛型","系统型","工程型","关系型","决策型","风险型","证据型"]
+
+
+
+## 重要规则
+
+1. eight_dim_score：8大维度分数0‑100。
+
+2. seat_init_score：21席每一席的初始化胜任分数0‑100。
+
+3. explain_basis是可解释依据，每一个关键分数，都要溯源引用用户原始回答片段；用于前端页面展示“AI输出依据”。
+
+4. 不要编造用户回答内容，全部依据用户输入原文。
+
+5. 不要输出markdown，只输出纯JSON。
+
+
+
+## 用户输入：下面是用户全部登舰测试情景回答文本集合：
+
+{{user_answer_list}}
+
+ 
+
+ 
+
+D‑2 Research‑Agent 研究Agent Prompt（模板key： agent_research_v1 ）
+
+ 
+
+plaintext  
+
+# 角色：星舰舰载【研究Agent】
+
+## 定位
+
+你是新大陆俱乐部星舰舰队的舰载智能之一。你的职责是收集、归纳、整理事实信息，**禁止做出价值判断、禁止输出决策建议，只输出客观事实集合**。
+
+## 上下文
+
+Mission目标：{{mission_goal}}
+
+当前Mission已经完成产出：{{finished_phase_outputs}}
+
+用户本次指令：{{user_command}}
+
+
+
+## 输出规则
+
+1. 输出结构化事实摘要，分点罗列；区分【已确认事实】、【待查证线索】。
+
+2. 严禁替人类做决策，不要写“建议应该怎么做”。
+
+3. 如果信息不足，明确标出信息缺口。
+
+4. 输出文本格式为Markdown，不要输出JSON。
+
+> 注意：你的全部输出仅仅是给舰员的参考资料；不会自动修改Mission任何业务状态；所有行动必须由真人舰员确认执行。
+
+ 
+
+ 
+
+D‑3 Decomposition‑Agent 拆解Agent Prompt（模板key： agent_decomposition_v1 ）
+
+ 
+
+plaintext  
+
+# 角色：星舰舰载【拆解Agent】
+
+## 定位
+
+你是新大陆俱乐部星舰舰队舰载智能。接收Mission目标，把宏大使命拆解为可执行任务单元，输出任务树，**输出全部为建议，不能直接执行任务**。
+
+## 上下文
+
+Mission目标：{{mission_goal}}
+
+Mission背景：{{mission_background}}
+
+已经完成阶段产出：{{finished_phase_outputs}}
+
+用户指令：{{user_command}}
+
+
+
+## 输出约束
+
+1. 输出层级化任务树Markdown；任务需要贴合七步Mission闭环：提出 → 指引 → 拆解 → 执行 → 监督 → 决策 → 审核。
+
+2. 每一条任务写明：任务简述、预期产出、潜在依赖。
+
+3. 只输出拆解方案，不要做价值取舍；不要替人类做最终决策。
+
+4. 明确标注：本拆解方案仅AI建议，需要真人舰员修改、确认之后方可进入执行阶段。
+
+ 
+
+ 
+
+D‑4 Risk‑Agent 风险Agent Prompt（模板key： agent_risk_v1 ）
+
+ 
+
+plaintext  
+
+# 角色：星舰舰载【风险Agent】
+
+## 定位
+
+舰载风险扫描智能。扫描当前Mission全部已有产出、目标、约束，识别潜在风险，划分风险等级【高/中/低】，给出风险现象、可能后果、可供人类参考的排查方向；**只做风险告警，不做决策、不给出强制解决方案**。
+
+
+
+## 上下文
+
+Mission目标：{{mission_goal}}
+
+Mission约束：{{mission_must_human_seats}}
+
+已完成阶段产出：{{finished_phase_outputs}}
+
+当前舰队21席人员分配概况：{{fleet_seat_summary}}
+
+用户指令：{{user_command}}
+
+
+
+## 输出规则
+
+1. 使用Markdown表格输出：风险编号｜风险等级｜风险现象｜潜在后果｜参考排查方向
+
+2. 区分：业务目标风险、人员席位风险、逻辑漏洞风险、外部假设风险。
+
+3. 重点检查治理舱硬性约束：决策者、风险官、守门人是否为真人。
+
+4. 结尾强制文字提示：所有风险仅为AI扫描告警，风险处置、取舍必须由舰队真人舰员完成确认。
+
+ 
+
+ 
+
+D‑5 Audit‑Agent 审核Agent Prompt（模板key： agent_audit_v1 ）
+
+ 
+
+plaintext  
+
+# 角色：星舰舰载【审核Agent】
+
+## 定位
+
+舰载交付物核验智能。对照Mission目标、使命原则、阶段交付标准，对当前产出物做核验，输出核验清单、发现的不一致点、待补全条目；**仅输出审核意见，没有审批决策权，最终审核确认必须由真人【审核者】席位舰员操作。**
+
+
+
+## 上下文
+
+Mission目标：{{mission_goal}}
+
+Mission预设原则边界：{{mission_principle}}
+
+待审核产出物内容：{{target_output_content}}
+
+用户指令：{{user_command}}
+
+
+
+## 输出规则
+
+1. 输出结构化核验清单：【符合项】、【待补全项】、【冲突不一致项】。
+
+2. 每一条冲突，写明：期望标准是什么，当前产出现状是什么。
+
+3. 不要自行修改产出内容，只指出差异。
+
+4. 末尾固定提示：本审核仅AI辅助意见；正式阶段流转，必须分配的真人审核者手动确认。
+
+ 
+
+ 
+
+D‑6 Mission协作反馈‑航行档案增量解析Prompt（模板key： feedback_parse_v1 ）
+
+ 
+
+plaintext  
+
+# 角色：航行档案增量解析官
+
+## 定位
+
+接收Mission收尾阶段人类填写的结构化协作反馈；不重新完整生成全部21席分数，**只计算每一个席位的增量变化值，输出增量，不输出完整全量分数**。
+
+## 业务规则
+
+1. 反馈全部是事实证据，不要主观夸大；增量分数区间 -20 ~ +20。
+
+2. 输出必须附带每一条增量变化对应的证据文本溯源。
+
+3. 输出严格JSON，禁止多余文字。
+
+
+
+输入：
+
+历史旧快照摘要：{{old_passport_snapshot_json}}
+
+本次Mission结构化反馈：{{mission_feedback_json}}
+
+
+
+输出JSON格式：
+
+{
+
+  "seat_delta":{
+
+    "探索者": 0,
+
+    "发现者": +12,
+
+    ...全部21席
+
+  },
+
+  "eight_dim_delta":{
+
+    "探索力": 0,
+
+    "想象力": +8,
+
+    ...8维全部字段
+
+  },
+
+  "delta_basis":[
+
+    {
+
+      "target_key":"席位/维度名称",
+
+      "delta_value":12,
+
+      "evidence_text":"来自反馈原文哪一段事实描述"
+
+    }
+
+  ]
+
+}
+
+ 
+
+ 
+
+D‑7 首页TTS播报文案（MVP浏览器Web Speech样例，存入前端静态常量）
+
+ 
+
+text  
+
+欢迎来到新大陆俱乐部。哥伦布扬帆出海，寻找地理的新大陆；而AI时代，我们寻找八种新大陆：新知识、新职业、新组织、新文明、新生产方式、新社会结构、新人机协作方式、新的经济运行方式。AI可以让星舰跑得更快，但人类决定星舰驶向何方。我们不去寻找最优秀的人，我们寻找能够彼此互补，共同完成伟大航行的舰员。
+
+ 
+
+ 
+
+附录C：AI组舰启发式算法完整伪代码（直接给到AtomCode翻译成Python，MVP版本）
+
+ 
+
+文件路径： backend/app/core/fleet_formation/fleet_heuristic_algorithm.py 
+
+⚠️ MVP是启发式加权打分；不做整数规划、遗传算法；商业V1再升级复杂优化。
+
+ 
+
+python  
+
+"""
+
+MVP‑hackathon 启发式组舰算法
+
+输入：
+
+    mission: Mission对象，包含目标、必须真人席位集合
+
+    candidate_user_list: List[UserWithPassportSnapshot]
+
+        每一个候选者携带【最新航行档案快照】：21席分数、8维向量、认知风格标签、历史mission履历
+
+输出：
+
+    FleetRecommendResult:
+
+        - seat_assignment_list：21席分配方案（human/agent_temp）
+
+        - explain_report：匹配解释报告
+
+        - risk_list：风险告警清单（致命风险/橙色警告）
+
+        - alternative_plan：一套备选方案
+
+"""
+
+
+
+def fleet_formation_heuristic(mission, candidate_user_list):
+
+    risk_list = []
+
+    explain_report = []
+
+    seat_assignment = dict() # key:席位名 value:分配对象{type,user_id/agent_name,reason}
+
+
+
+    must_human_seats = mission.must_human_seats # Mission勾选必须真人的席位
+
+    # 硬约束1：治理舱强制真人三席位，无条件加入must_human_seats
+
+    for seat in MUST_HUMAN_GOVERN_SEATS:
+
+        if seat not in must_human_seats:
+
+            must_human_seats.append(seat)
+
+
+
+    all_seats = ALL_21_SEATS.copy()
+
+    remaining_candidates = candidate_user_list.copy()
+
+
+
+    # -------- 第一步：优先分配【必须真人】的席位（优先级最高，致命约束） --------
+
+    for seat in must_human_seats:
+
+        # 对该席位，所有候选者计算适配分 = 该席位seat_full_score
+
+        candidate_score_pair = []
+
+        for user in remaining_candidates:
+
+            score = user.passport_snapshot.seat_full_score[seat]
+
+            candidate_score_pair.append( (score, user) )
+
+        # 从高到低排序
+
+        candidate_score_pair.sort(reverse=True, key=lambda x:x[0])
+
+
+
+        best_score, best_user = candidate_score_pair[0]
+
+        if best_score < 40:
+
+            # 致命风险：没有合适真人满足强制真人席位，方案不可确认
+
+            risk_list.append({
+
+                "risk_level":"FATAL",
+
+                "seat":seat,
+
+                "desc":f"强制真人席位【{seat}】，全部候选者胜任分数低于40，无合适真人候选，舰队方案无法确认。"
+
+            })
+
+            seat_assignment[seat] = {"assign_type":"agent_temp","agent_alias":"Risk‑Agent","reason":"致命风险，无真人候选"}
+
+            continue
+
+
+
+        # 分配该席位给best_user
+
+        seat_assignment[seat] = {
+
+            "assign_type":"human",
+
+            "assigned_user_id": best_user.user_id,
+
+            "reason":f"该席位最高分候选者，席位得分{best_score}，来自航行档案快照版本{best_user.passport_snapshot.passport_version_no}"
+
+        }
+
+        explain_report.append({"seat":seat,"user_id":best_user.user_id,"reason":seat_assignment[seat]["reason"]})
+
+
+
+        # 统计该用户已经被分配多少席位
+
+        user_assign_count = sum([1 for s in seat_assignment.values() if s.get("assigned_user_id") == best_user.user_id])
+
+        if user_assign_count >= MAX_DOUBLE_SEAT_PER_USER:
+
+            risk_list.append({
+
+                "risk_level":"WARNING_ORANGE",
+
+                "seat":seat,
+
+                "user_id":best_user.user_id,
+
+                "desc":f"舰员{best_user.civilization_no}已经兼任{user_assign_count}个席位，超过上限{MAX_DOUBLE_SEAT_PER_USER}，存在过载风险。指挥官可以手动调整。"
+
+            })
+
+
+
+    # --------第二步：分配剩余非强制真人席位 --------
+
+    for seat in all_seats:
+
+        if seat in seat_assignment:
+
+            continue #已经分配过，跳过
+
+        # 候选打分，优先选还没有被大量分配席位的人；席位原始得分*0.7 + （未被分配权重加分0‑30）
+
+        candidate_score_pair = []
+
+        for user in remaining_candidates:
+
+            base_seat_score = user.passport_snapshot.seat_full_score[seat]
+
+            assigned_count_for_user = sum([1 for s in seat_assignment.values() if s.get("assigned_user_id") == user.user_id])
+
+            overload_penalty = assigned_count_for_user * 6 #兼任越多，扣分越大
+
+            final_score = max(0, base_seat_score - overload_penalty)
+
+            candidate_score_pair.append((final_score, base_seat_score, user))
+
+
+
+        candidate_score_pair.sort(reverse=True, key=lambda x:x[0])
+
+        best_final_score, best_raw_score, best_user = candidate_score_pair[0]
+
+
+
+        if best_final_score >=35:
+
+            # 分配真人
+
+            seat_assignment[seat] = {
+
+                "assign_type":"human",
+
+                "assigned_user_id":best_user.user_id,
+
+                "reason":f"席位综合匹配分{best_final_score}，原始席位得分{best_raw_score}"
+
+            }
+
+            explain_report.append({"seat":seat,"user_id":best_user.user_id,"reason":seat_assignment[seat]["reason"]})
+
+            # 兼任计数与橙色告警
+
+            user_assign_count = sum([1 for s in seat_assignment.values() if s.get("assigned_user_id") == best_user.user_id])
+
+            if user_assign_count >= MAX_DOUBLE_SEAT_PER_USER:
+
+                risk_list.append({
+
+                    "risk_level":"WARNING_ORANGE",
+
+                    "seat":seat,
+
+                    "user_id":best_user.user_id,
+
+                    "desc":f"舰员{best_user.civilization_no}已经兼任{user_assign_count}个席位，超过上限{MAX_DOUBLE_SEAT_PER_USER}，存在过载风险。指挥官可以手动调整。"
+
+                })
+
+        else:
+
+            # 分数不足，Agent临时补位；标记黄色风险
+
+            seat_assignment[seat] = {
+
+                "assign_type":"agent_temp",
+
+                "agent_alias":map_seat_to_agent(seat), #席位映射对应Agent
+
+                "reason":f"无合适真人候选，由Agent临时补位，该席位建议指挥官后续手动补充真人。"
+
+            }
+
+            risk_list.append({
+
+                "risk_level":"WARNING_YELLOW",
+
+                "seat":seat,
+
+                "desc":f"席位【{seat}】由Agent临时补位，建议补充真人舰员。"
+
+            })
+
+
+
+    # --------第三步：认知多样性校验，追加风险提示（不阻断方案，仅告警） --------
+
+    # 提取已经分配真人的全部舰员认知风格标签集合，判断是否高度同质化
+
+    assigned_real_user_ids = set()
+
+    for item in seat_assignment.values():
+
+        if item["assign_type"] == "human":
+
+            assigned_real_user_ids.add(item["assigned_user_id"])
+
+    user_objects = [u for u in candidate_user_list if u.user_id in assigned_real_user_ids]
+
+    style_list = []
+
+    for u in user_objects:
+
+        style_list.extend(u.passport_snapshot.cognitive_style_tags)
+
+    unique_style = set(style_list)
+
+    if len(unique_style) <=3:
+
+        risk_list.append({
+
+            "risk_level":"WARNING_YELLOW",
+
+            "seat":"全局舰队",
+
+            "desc":f"舰队认知风格集合仅有{len(unique_style)}类，认知多样性偏低，容易出现思维盲区，建议指挥官手动调整部分人员。"
+
+        })
+
+
+
+    # --------第四步：生成备选简单方案（MVP仅一套备选，商业版多套） --------
+
+    alternative_plan = generate_alternative_plan(mission, candidate_user_list, seat_assignment)
+
+
+
+    return FleetRecommendResult(
+
+        seat_assignment_list=seat_assignment,
+
+        explain_report=explain_report,
+
+        risk_list=risk_list,
+
+        alternative_plan=alternative_plan
+
+    )
+
+ 
+
+ 
+
+配套说明：
+
+ 
+
+1.  map_seat_to_agent(seat) ：席位映射Agent，例如拆解师 → Decomposition‑Agent；风险官→Risk‑Agent；
+
+2. 返回结果的risk_level枚举： FATAL 致命风险（舰队不能直接确认）； WARNING_ORANGE 橙色警告； WARNING_YELLOW 黄色提示；
+
+3. 业务规则：哪怕存在FATAL致命风险，算法依然输出完整方案，但API返回标记 is_confirmable=False ，前端页面按钮【确认舰队】置灰不可点击；指挥官手动调整消除致命风险之后，按钮才启用。
+
+4. 指挥官可以无视全部告警，手动强行修改分配，但致命风险不消除无法确认舰队；橙色、黄色告警可以无视直接确认。
+
+ 
+
+附录D：航行档案快照分数计算公式（后端核心，不可前端实现）
+
+ 
+
+文件路径： backend/app/core/passport_service/passport_calc.py 
+
+ 
+
+1）初始化快照（来自登舰测试）
+
+ 
+
+Score_{seat\_init}=LLM\_output\_seat\_score
+
+Score_{dim\_init}=LLM\_output\_eight\_dim\_score
+
+ 
+
+2）Mission反馈回填增量迭代（生成新版本快照）
+
+ 
+
+权重规则：
+
+ 
+
+- 初始化登舰测试：总权重 30%
+
+- 全部历史Mission协作反馈总和：总权重 70%
+
+- 历史Mission时间衰减：越近完成的Mission权重越高，更早的Mission逐步衰减，但不会归零。
+
+ 
+
+伪代码实现：
+
+ 
+
+python  
+
+def calc_new_passport_snapshot(old_snapshot, mission_feedback_delta_list):
+
+    """
+
+    old_snapshot：用户上一版航行档案快照（历史版本，只读，绝不修改）
+
+    mission_feedback_delta_list：多次Mission反馈增量集合，每一条包含seat_delta、eight_dim_delta、mission_finish_time
+
+    return：全新生成的passport_snapshot对象，全新version_no；old_snapshot完整保留在数据库。
+
+    """
+
+    # 时间衰减系数，最近Mission系数1.0；每往前推一个Mission，衰减0.85；最小不低于0.2
+
+    sorted_feedback = sorted(mission_feedback_delta_list,key=lambda x:x["mission_finish_time"],reverse=True)
+
+    weighted_seat_total = defaultdict(float)
+
+    weighted_dim_total = defaultdict(float)
+
+    total_weight_sum = 0.0
+
+    decay_factor = 1.0
+
+
+
+    for feedback in sorted_feedback:
+
+        decay_factor = max(0.2, decay_factor * 0.85)
+
+        total_weight_sum += decay_factor
+
+        for seat_name,delta in feedback["seat_delta"].items():
+
+            weighted_seat_total[seat_name] += delta * decay_factor
+
+        for dim_name,delta in feedback["eight_dim_delta"].items():
+
+            weighted_dim_total[dim_name] += delta * decay_factor
+
+
+
+    # 基线 = 旧快照的席位分数
+
+    new_seat_score = dict()
+
+    new_dim_score = dict()
+
+    for seat in ALL_21_SEATS:
+
+        history_feedback_contribution = weighted_seat_total[seat] / total_weight_sum if total_weight_sum>0 else 0
+
+        new_seat_score[seat] = clamp(
+
+            old_snapshot.seat_full_score[seat] * 0.3 + history_feedback_contribution * 0.7,
+
+            0,
+
+            100
+
+        )
+
+    for dim in EIGHT_DIM_KEYS:
+
+        history_feedback_contribution = weighted_dim_total[dim] / total_weight_sum if total_weight_sum>0 else 0
+
+        new_dim_score[dim] = clamp(
+
+            old_snapshot.eight_dim_score[dim] *0.3 + history_feedback_contribution *0.7,
+
+            0,
+
+            100
+
+        )
+
+    # clamp函数：限制数值在0‑100区间，防止越界
+
+    return build_new_snapshot_object(old_snapshot,new_seat_score,new_dim_score,feedback_delta_list)
+
+ 
+
+ 
+
+⚠️业务硬性约束：
+
+ 
+
+1. old_snapshot绝对不能update修改；只读取，生成全新记录插入数据库。
+
+2. clamp 强制把分数锁死0‑100，防止多次反馈叠加溢出。
+
+3. 每一次迭代生成新 passport_version_no 版本号+1；溯源字段 snapshot_source_type="mission_feedback" ， source_relation_id=本次mission_id 。
+
+ 
+
+附录E：演示模式预置Alpha / Beta模拟数据集完整定义（脚本 scripts/init‑demo‑preset‑snapshot.py ）
+
+ 
+
+直接写在初始化脚本；运行脚本自动写入demo_schema；全部为人工构造脱敏模拟数据，无任何真实用户隐私。
+
+ 
+
+E‑1 User‑Alpha 预置快照
+
+ 
+
+- civilization_no：NW‑DEMO‑A001
+
+- 称号：Explorer
+
+- star_count：0（初始化未完成Mission）
+
+- 8维分数：
+
+ 
+
+json  
+
+{
+
+  "探索力":91,
+
+  "想象力":88,
+
+  "理解力":74,
+
+  "拆解力":60,
+
+  "执行力":55,
+
+  "协作力":70,
+
+  "决策力":62,
+
+  "守护力":30
+
+}
+
+ 
+
+ 
+
+- 认知风格标签： ["发散型","想象型","关系型"] 
+
+- TOP3席位：探索者92、提案者86、连接者81
+
+- 治理舱全部席位全部低分：风险官22，守门人18，决策者28。
+
+ 
+
+E‑2 User‑Beta 预置快照
+
+ 
+
+- civilization_no：NW‑DEMO‑B001
+
+- 称号：Explorer
+
+- star_count：0
+
+- 8维分数：
+
+ 
+
+json  
+
+{
+
+  "探索力":40,
+
+  "想象力":35,
+
+  "理解力":82,
+
+  "拆解力":85,
+
+  "执行力":88,
+
+  "协作力":75,
+
+  "决策力":86,
+
+  "守护力":94
+
+}
+
+ 
+
+ 
+
+- 认知风格标签： ["收敛型","证据型","风险型","系统型"] 
+
+- TOP3席位：风险官93、审核者89、守门人87
+
+- 探索舱席位低分：探索者30、想象者22、提案者35。
+
+ 
+
+配套预置模拟登舰原始作答文本（模拟LLM解析输入，存入demo库，用于展示explain_basis可解释依据），脚本内置模拟回答文本，不需要真实用户输入。
+
+ 
+
+附录F：Innovate Trace 航迹导出数据模型（JSON输出，再转PDF）
+
+ 
+
+对应选手手册07章节BUILD & EVIDENCE，四条航迹【问题、数据、验证、迭代】
+
+ 
+
+json  
+
+{
+
+  "trace_meta":{
+
+    "project_name":"新大陆俱乐部 New World Club",
+
+    "team_name":"___队伍名称___",
+
+    "hackathon_event":"ING HACKATHON 2026 未定信号赛道",
+
+    "export_time":"2026‑09‑XX HH:MM:SS",
+
+    "trace_version":"v1.0"
+
+  },
+
+  "trace_question":{
+
+    "problem_statement":"完整问题描述",
+
+    "target_user":"目标用户群体",
+
+    "loss_and_pain_point":"具体损失与痛点，不要泛泛谈提效",
+
+    "mission_example":"典型Mission示例"
+
+  },
+
+  "trace_data":{
+
+    "private_data_asset":"航行档案Expedition Passport",
+
+    "data_source_detail":[
+
+      "1.初始化：登舰测试开放式情景作答原始文本",
+
+      "2.核心护城河：Mission完成之后协作反馈回填记录（每一次生成新版本快照，不覆盖历史）"
+
+    ],
+
+    "individual_diff_description":"更换不同用户私有航行档案，同一Mission，同一候选池，AI组舰输出舰队席位分配发生实质差异。",
+
+    "two_remove_test":[
+
+      "①移除私有航行档案：系统退化为通用情景问卷，无法输出个性化21席画像、定制化组舰。",
+
+      "②移除AI：人工解析几十人开放式回答、做多维度评估、互补编组，人力成本极高，无法规模化。"
+
+    ],
+
+    "demo_dataset_note":"Demo全部使用人工构造脱敏模拟数据集User‑Alpha / User‑Beta，无真实自然人隐私数据。"
+
+  },
+
+  "trace_verification":{
+
+    "verify_case_list":[
+
+      {
+
+        "case_name":"对照实验验证（赛道硬性）",
+
+        "verify_content":"固定Mission，固定其余候选池，替换Alpha↔Beta两套完全相反私有航行档案，运行组舰算法，观察舰队输出是否实质改变。",
+
+        "result":"通过；舰队席位分配发生明显变更；风险清单同步更新。"
+
+      },
+
+      {
+
+        "case_name":"治理舱强制真人硬约束校验",
+
+        "verify_content":"候选池不存在风险官真人，发起组舰。",
+
+        "result":"通过；返回FATAL致命风险，确认舰队按钮置灰，无法确认。"
+
+      },
+
+      {
+
+        "case_name":"Agent人类确认拦截器校验",
+
+        "verify_content":"调用Risk‑Agent生成风险报告；尝试不经过人类确认，直接流转Mission决策阶段。",
+
+        "result":"通过；后端拦截，拒绝状态流转；必须真人手动确认，Mission‑Graph节点才会前进。"
+
+      },
+
+      {
+
+        "case_name":"快照不可覆盖验证",
+
+        "verify_content":"完成一次Mission，执行反馈回填生成新版本航行档案快照。",
+
+        "result":"通过；旧版本快照完整保留；新增一条version+1记录，原始记录不做update更新。"
+
+      },
+
+      {
+
+        "case_name":"退化测试：删除全部Mission回填反馈，仅保留初始化问卷",
+
+        "verify_content":"只保留登舰初始化快照，无任何Mission历史反馈，运行组舰。",
+
+        "result":"通过；系统能力退化为普通情景测试，编组建议可信度大幅下降，护城河消失。"
+
+      }
+
+    ],
+
+    "log_reference":["agent_call_log_id列表，关联数据库真实Agent调用日志记录ID"]
+
+  },
+
+  "trace_iteration":{
+
+    "iteration_history":[
+
+      {
+
+        "iter_no":"迭代1",
+
+        "old_concept":"人才招聘求职匹配平台",
+
+        "trigger":"未定信号赛道命题评审，发现招聘平台没有私有持续积累数据壁垒",
+
+        "adjust_action":"剥离求职招聘语境；转向复杂创新使命人机协作编组系统。"
+
+      },
+
+      {
+
+        "iter_no":"迭代2",
+
+        "old_concept":"护城河来自登舰测试问卷",
+
+        "trigger":"赛道自检，一次性问卷属于通用工具，可复制，不存在壁垒",
+
+        "adjust_action":"重新定义护城河：Mission协作反馈持续回填的时序航行档案快照；调整权重，初始化仅占30%，历史协作占70%。"
+
+      },
+
+      {
+
+        "iter_no":"迭代3",
+
+        "old_concept":"Agent可以辅助自动推进Mission任务流",
+
+        "trigger":"人机边界反思；AI不能决定航向，只能加速航行",
+
+        "adjust_action":"后端增加全局人类确认拦截器；所有Mission状态流转必须真人确认；Agent输出仅建议。"
+
+      },
+
+      {
+
+        "iter_no":"迭代4",
+
+        "old_concept":"MVP包含完整APU生产力凭证、经济实验室业务逻辑",
+
+        "trigger":"48小时黑客松开发时间限制；避免Demo空泛，全部是概念没有可运行产品",
+
+        "adjust_action":"MVP只保留APU数据表模型骨架，业务逻辑全部移至V2.0商业版本；Demo聚焦赛道必须闭环。"
+
+      },
+
+      {
+
+        "iter_no":"迭代5",
+
+        "old_concept":"路演现场实时大模型完成对照实验",
+
+        "trigger":"现场网络、LLM限流、超时风险；比赛Demo稳定性风险评估",
+
+        "adjust_action":"增加演示模式，预置两套已经解析完成Alpha/Beta快照；对照实验不需要实时调用LLM；真实答题依然保留，用于评委体验。"
+
+      }
+
+    ],
+
+    "future_plan":"V2.0商业版本规划简述"
+
+  },
+
+  "appendix":{
+
+    "agent_call_log_ids":["xxx","xxx"],
+
+    "mission_archive_id":"NW‑M‑DEMO‑001",
+
+    "demo_snapshot_ids":["Alpha快照ID","Beta快照ID"]
+
+  }
+
+}
+
+ 
+
+ 
+
+附录G：前端页面组件清单（Vue3，给到AtomCode）
+
+ 
+
+ frontend‑web/src/components/ 
+
+ 
+
+plaintext  
+
+components/
+
+├── common/
+
+│   ├── PageTitle.vue          # 页面通用标题组件
+
+│   ├── LoadingOverlay.vue     # 全局Loading遮罩
+
+│   ├── ErrorMessageBox.vue     # 错误提示弹窗
+
+│   ├── DemoModeBanner.vue      # ⭐演示模式顶部黄色提示条（所有页面常驻）
+
+│   ├── NpcFloatAvatar.vue      # ⭐MVP首页悬浮领航员NPC头像（触发Web Speech TTS播报）
+
+│   ├── RadarChart8D.vue        # ⭐8维能力雷达图（ECharts封装，航行护照核心）
+
+│   ├── SeatCard.vue            # 21席单席位卡片（区分真人/Agent补位，不同边框颜色）
+
+│   ├── CabinPanel.vue          # 三舱整体面板：探索舱/建造舱/治理舱，批量渲染SeatCard
+
+│   ├── MissionGraphFlow.vue    # ⭐Mission‑Graph七步闭环流程图（ECharts，舰桥工作台核心）
+
+│   ├── AgentCallCard.vue       # Agent调用卡片：输入、输出、【全部接受｜修改｜驳回】三个按钮
+
+│   ├── RiskAlertList.vue       # 风险告警列表，区分FATAL致命/橙色警告/黄色提示
+
+│   ├── PassportSnapshotCompare.vue # ⭐快照对比组件：展示初始化快照 VS Mission回填新版本快照（路演护城河演示）
+
+│   ├── PdfExportButton.vue     # PDF导出通用按钮，航迹/航行报告导出复用
+
+│   └── TtsSpeakerBtn.vue       # 浏览器Web Speech TTS播放按钮组件
+
+├── expedition‑test/
+
+│   ├── TestIntroPage.vue       # 登舰测试引导页
+
+│   ├── QuestionAnswerInput.vue # 单道开放式问答输入框
+
+│   ├── TestResultReport.vue    # 测试解析结果报告页（雷达图+TOP3席位+可解释依据展开面板）
+
+├── passport/
+
+│   ├── PassportMainCard.vue    # 航行护照主卡片（称号、星标、基础信息）
+
+│   ├── SeatFullScoreList.vue   # 完整21席得分列表，点开查看explain_basis可解释依据弹窗
+
+│   ├── SnapshotVersionList.vue # 历史快照版本切换列表
+
+│   └── PrivacySettingForm.vue # 隐私授权设置表单
+
+├── fleet‑formation/
+
+│   ├── CandidatePoolList.vue   # 候选池列表（脱敏摘要视图，无完整私有分数）
+
+│   ├── FleetRecommendResult.vue # 组舰算法输出完整结果页面；展示三舱席位分配、风险清单、匹配解释报告
+
+│   ├── DemoSwapUserControl.vue # ⭐路演演示模式专用按钮组件：一键替换Alpha↔Beta候选成员，调用专用演示接口
+
+│   └── ManualAdjustFleet.vue   # 指挥官手动调整舰队席位分配表单
+
+├── bridge‑deck/
+
+│   ├── BridgeHomeLayout.vue    # 舰桥工作台三栏布局（左侧21席舱面板｜中间MissionGraph｜右侧Agent集群面板）
+
+│   ├── PhaseOutputSubmit.vue   # Mission阶段产出物提交组件
+
+│   ├── PhaseConfirmAction.vue  # 阶段确认操作组件；决策节点后端鉴权校验操作者身份
+
+│   └── AgentClusterPanel.vue   # 舰载智能Agent集群面板，选择Agent，输入指令，调用后端接口，展示返回结果与操作按钮
+
+├── mission‑feedback/
+
+│   ├── FeedbackFormPerUser.vue # Mission收尾，对单个舰员的结构化反馈填写表单（每个席位填写得分+事实证据文本）
+
+│   └── FeedbackBatchSubmit.vue # 批量提交全部反馈表单
+
+└── report/
+
+    ├── MissionArchiveReport.vue # Mission归档航行报告预览组件
+
+    └── InnovateTraceReport.vue # Innovate Trace航迹文档预览组件
+
+ 
+
+ 
+
+附录H：路演现场操作检查清单（打印纸质，答辩团队人手一份）
+
+ 
+
+【赛前开发完成检查】
+
+ 
+
+魔搭创空间实例启动，状态Running；Demo对外链接复制保存；
+
+运行 scripts/init‑demo‑preset‑snapshot.py 脚本，成功生成Alpha、Beta两套预置脱敏航行档案；
+
+运行 scripts/init_system_prompt_templates.py ，全部Prompt模板写入数据库；
+
+完整从头到尾跑一遍【13章节MVP‑Demo完整执行流程】；对照实验：Alpha替换Beta，确认舰队输出实质性变化；
+
+验证：Agent调用之后，如果不点击人类确认，Mission‑Graph流程图不会流转下一阶段；后端拦截生效；
+
+验证Mission模拟收尾，快照回填，旧快照不被覆盖，生成新版本号；
+
+导出完整Innovate Trace航迹PDF，检查四条航迹全部内容完整；
+
+海报80×180cm竖版4:9高清PNG，9:30提交；
+
+录制≥2分钟兜底演示视频，包含完整对照实验；
+
+Github代码仓库，双分支mvp‑hackathon / commercial‑v1，全部文档、PRD、脚本上传；
+
+本地笔记本备份一份完全一致环境，用于现场魔搭容器崩溃的应急兜底；
+
+检查.env配置： MOCK_DEMO_MODE=true ， DB_ENGINE=sqlite ；大模型API密钥有效；
+
+页面顶部 DemoModeBanner.vue 演示模式提示条常驻，不会被误关闭。
+
+ 
+
+【比赛现场，上场前15分钟检查】
+
+ 
+
+打开浏览器，访问Demo魔搭链接；确认页面全部加载，无控制台报错；
+
+登录演示模式专用测试账号；执行 重置演示库 接口，把demo_schema恢复干净初始状态；
+
+重新执行预置数据集脚本，确认Alpha、Beta档案存在；
+
+完整快速跑一遍核心对照实验（Alpha↔Beta一键替换组舰），确认现场环境下依然生效；
+
+测试一次Agent调用，确认返回正常，人类确认按钮正常；
+
+测试一次PDF导出Innovate Trace文档；
+
+关闭浏览器全部多余插件、弹窗；关闭自动翻译插件（会破坏页面中文枚举字符串）；
+
+准备备用：网线、拓展坞；笔记本本地备份Demo打开备用；兜底视频文件本地播放器打开就绪；
+
+答辩团队快速复述一遍口头讲解脚本，控制总演示时间3‑4分钟。
+
+ 
+
+【现场路演演示过程的口头必说要点（不允许遗漏）】
+
+ 
+
+1. “登舰测试只是初始化，真正护城河来自后续Mission任务持续回填的航行档案。”
+
+2. “下面我们做赛道要求的对照实验：Mission完全不变，其他候选者全部不变，仅仅替换一份用户私有航行档案，大家可以看到舰队编组发生实质变化，也就是未定信号：输出依附于用户独有的私有数据。”
+
+3. “Agent给出全部只是建议，AI负责让星舰跑得更快，人类决定星舰驶向何方；后端有全局拦截器，没有真人确认，Mission流程绝对不会自动往下流转。”
+
+4. “每一次Mission完成，协作反馈会回填，生成航行档案全新版本快照，历史旧版本全部永久保留，不会被覆盖；使用越久，这份档案越独一无二。”
+
+5. “APU生产力单元、新大陆经济实验室，是我们V2.0远期构想，本次MVP Demo没有落地实现。”
+
+ 
+
+附录I：常见坑与开发避坑清单（给AtomCode）
+
+ 
+
+1. ❌不要把21席分数计算、组舰算法硬约束、快照版本逻辑放到前端JS。全部业务核心逻辑后端实现；前端只做渲染交互。
+
+2. ❌不要直接修改旧的 expedition_passport_snapshot 数据库记录；只能INSERT新增快照，永远不要UPDATE历史快照。
+
+3. ❌演示模式不要直接操作正式业务数据表；隔离demo_schema；防止演示测试数据污染真实业务库。
+
+4. ❌不要在Demo里使用任何真实自然人数据；全部使用人工构造脱敏模拟Alpha/Beta数据集。
+
+5. ❌不要把用户原始登舰答卷明文打印日志；字段加密存储，日志只打印snapshot_id，不打印answer原文。
+
+6. ❌Agent接口绝对不能直接修改Mission状态； ship‑intelligence/agent/call 接口只返回文本；业务流转只能走phase‑output/confirm接口，后端拦截器校验。
+
+7. ❌不要LLM输出的21席、8维分数直接不加校验入库；后端做数值校验，强制0‑100；解析失败要重试，重试失败返回友好报错，不要把脏数据落库。
+
+8. ❌不要写死大量长Prompt在业务代码字符串；全部存入 system_prompt_template 数据库表，通过template_key读取，支持版本管理。
+
+9. ❌MVP不要引入Redis、向量库、Celery、FunASR、MinIO这些重型组件；全部移到commercial‑v1分支；MVP使用SQLite + FastAPI + OpenAI‑SDK兼容魔搭推理API。
+
+10. ❌不要为了演示方便，前端写死伪造两套组舰结果；对照实验必须调用真实后端算法接口，真实重新计算生成两套结果；评委可以查看后端agent_call_log、fleet_generation_log_json日志溯源。
+
+11. ❌不要混淆枚举字符串，例如“风险官”不能写成“风险管理员”，所有席位名称全部引用后端常量文件 seat_constants.py ，前后端统一同源枚举。
+
+12. ❌H5移动端舰桥工作台完整复杂组舰编辑不做；移动端仅做查看；复杂操作提示跳转PC浏览器。
+
+ 
+
+附录J：商业V1（commercial‑v1）扩展路线图（不在MVP实现，写进PRD作为远期规划）
+
+ 
+
+仅用于PPT的未来展望，不进入mvp‑hackathon代码。
+
+ 
+
+1. 多租户组织中台：Org‑Admin组织管理员；组织内部私有候选池，组织隔离数据；组织内Mission模板库。
+
+2. 完整NPC领航员对话系统：FunASR服务端ASR+TTS；多轮会话记忆；自然语言调度全部Agent；登舰测试支持语音口述作答。
+
+3. 向量数据库Chroma接入：登舰作答文本、Mission产出物做向量索引；候选池语义检索；基于任务语义自动推荐匹配舰员。
+
+4. 组舰算法升级：替换MVP启发式算法；采用多目标遗传算法；支持百人规模候选池大规模舰队优化；引入历史舰队完成效果做强化学习迭代。
+
+5. 完整APU生产力单元业务闭环：APU生产力单元档案；APU Credit贡献积分完整计算规则；贡献证据图谱Human‑Contribution‑Graph；组织内部贡献流转。
+
+6. 实时协同工作台：集成IM即时通讯；多人在线协同编辑产出物；在线会议嵌入；任务子任务嵌套；日历里程碑。
+
+7. 任务异步队列Celery+Redis：长文本解析、批量报告生成、大文档处理全部异步任务；解决LLM长调用阻塞Web请求。
+
+8. MinIO对象存储：附件、图片、PDF报告、录屏文件对象存储，替代本地文件系统。
+
+9. Casbin完整RBAC权限系统：细粒度数据权限；航行档案字段级授权；支持“允许A用户只看B用户TOP3席位，禁止查看完整分数和原始答卷”。
+
+10. 消息推送中台：站内信、邮件、小程序/App推送；Mission阶段变更通知、舰队组建完成通知。
+
+11. 开放API平台：对外开放REST API；允许第三方系统读取授权后的航行档案摘要；外部系统可以发起Mission，调用组舰服务。
+
+12. 新大陆经济实验室模块：开展AI生产力单元的模拟沙盘实验；模拟不同组合APU单元的产出、贡献分配，作为研究型模块，依然不做真实金融、代币。
+
+ 
+
+文档结束语
+
+ 
+
+本份完整PRD到此全部结束。文档覆盖：产品世界观、业务规则、全部八大系统、数据库表、API接口、Prompt全集、算法伪代码、前端组件清单、第三方开源组件完整安装配置、双分支开发边界、MVP黑客松完整Demo流程、Innovate Trace航迹完整成文、海报PPT大纲、评委问答、开发避坑清单、商业版本远期路线图。
+
+交付给AtomCode开发时，请完整把全部文档一次性给到；优先执行文档最后的【给AtomCode总指令】，严格按P0/P1/P2/P3开发优先级实现mvp‑hackathon分支；commercial‑v1分支只建立目录骨架，不实现业务。
+
+开发过程中，如果出现需求歧义，以本PRD文档为唯一权威依据；遇到技术不可实现点，必须写风险与降级方案，不允许自行改动赛道核心业务规则（航行档案快照不可覆盖、21席权重分配、Agent人类确认拦截器、对照实验后端真实计算）。
+
+ 
+
+如果你下一步需要，我可以继续输出三份产出：
+
+ 
+
+1. 可直接复制给PPT的逐页完整文字稿；
+
+2. 海报全部文案（设计师直接用）；
+
+3. 全套评委Q&A问答库（答辩队员背诵版）。
+
