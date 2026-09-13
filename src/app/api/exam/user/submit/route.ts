@@ -1,0 +1,66 @@
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { examAnswerRecord, examPaperAssign, examPaper } from "@/storage/database/shared/schema";
+import { requireUser } from "@/lib/auth";
+import { eq, and, sql } from "drizzle-orm";
+import { ok, fail, handler } from "@/lib/api-helpers";
+import { getQuestionMap, examAnalysisMain, saveExamReport, type AnswerRecord } from "@/lib/exam";
+
+export const dynamic = "force-dynamic";
+
+const submitSchema = z.object({
+  assignId: z.string().min(1),
+  answers: z.record(z.string(), z.string()),
+});
+
+/** 考生：提交整套答卷，触发测评分析 */
+export const POST = handler(async (req: NextRequest) => {
+  const me = await requireUser();
+  const body = submitSchema.safeParse(await req.json());
+  if (!body.success) return fail(body.error.issues[0]?.message ?? "参数错误");
+
+  const dbi = await db();
+  const assign = await dbi.select().from(examPaperAssign).where(eq(examPaperAssign.assignId, body.data.assignId)).limit(1);
+  if (assign.length === 0) return fail("考卷不存在", 404);
+  if (assign[0].userUid !== me.userId) return fail("无权操作此考卷", 403);
+  if (assign[0].status >= 1) return fail("已提交，不可重复提交", 400);
+
+  const paper = await dbi.select().from(examPaper).where(eq(examPaper.paperId, assign[0].paperId)).limit(1);
+  if (paper.length === 0) return fail("考卷数据异常", 404);
+  const qIds = (paper[0].questionIds as string[]) ?? [];
+
+  for (const [questionId, answer] of Object.entries(body.data.answers)) {
+    const existing = await dbi
+      .select()
+      .from(examAnswerRecord)
+      .where(and(eq(examAnswerRecord.assignId, body.data.assignId), eq(examAnswerRecord.questionId, questionId)))
+      .limit(1);
+    if (existing.length > 0) {
+      await dbi
+        .update(examAnswerRecord)
+        .set({ userAnswer: answer, isDraft: false, updatedAt: sql`now()` })
+        .where(eq(examAnswerRecord.recordId, existing[0].recordId));
+    } else {
+      await dbi.insert(examAnswerRecord).values({
+        assignId: body.data.assignId,
+        questionId,
+        userAnswer: answer,
+        isDraft: false,
+      });
+    }
+  }
+
+  await dbi.update(examPaperAssign).set({ status: 1 }).where(eq(examPaperAssign.assignId, body.data.assignId));
+
+  const questionMap = await getQuestionMap(qIds);
+  const answerRecords: AnswerRecord[] = Object.entries(body.data.answers).map(([questionId, userAnswer]) => ({
+    questionId,
+    userAnswer,
+  }));
+
+  const result = examAnalysisMain(answerRecords, questionMap);
+  const reportId = await saveExamReport(body.data.assignId, result);
+
+  return ok({ reportId, result });
+});
